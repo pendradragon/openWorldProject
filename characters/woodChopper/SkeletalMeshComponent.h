@@ -270,7 +270,7 @@ struct TStructOpsTypeTraits<FSkeletalMeshComponentClothTickFunciton> : public TS
   };
 
 
-struct FClosesrPointOmPhysicsAsset
+struct FClosesrPointOnPhysicsAsset
   {
     //The closest point in world space
     FVector ClosestWorldPosition; 
