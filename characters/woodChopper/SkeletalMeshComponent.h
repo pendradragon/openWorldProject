@@ -313,3 +313,11 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
     friend struct FLinkedInstanceAdapater;
     friend struct FLinkedAnimLayerClassData; 
     friend struct FRigUnit_AnimNextWriteSkeletalMeshComponentPose;
+
+    #if WITH_EDITORONLY_DATA
+      private: 
+        //The skeletal mesh used by this component
+        UE_DEPRECATED(5.1, "This property isn't deprecatd, but a getter and setter must be used at all times to preserve correct operations.")
+        UPROPERTY(EditAnywhere, Transient, Setter = SetSkeletalMeshAsset, BlueprintSetter = SetSkeletalMeshAsset, Getter = GetSkeletalMeshAsset, BlueprintGetter = GetSkeletalMeshAsset, Category = Mesh)
+        TObjectPtr<USkeletalMesh> SkeletalMeshAsst;
+    #endif
