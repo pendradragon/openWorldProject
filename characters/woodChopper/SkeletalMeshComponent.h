@@ -184,3 +184,53 @@ namespace EAnimationMode
         AnimationCustomMod UMETA(DisplayName="Use Custom Mode"),
       };
   }
+
+UENUM()
+namespace EPhysicsTransformUpdateMode
+  {
+    enum Type : int
+      {
+        SimulationUpdatesComponentTransform, 
+        ComponentTransformIsKineatic
+      };
+  }
+
+//Enum for indicating whether kinematic updates can be deferred
+enum class EAllowKinematicDeferral
+  {
+    AllowDeferral, 
+    DisallowDeferral
+  };
+
+/**
+* Tick function that does post-physics work on skeletal mesh component. This executes in EndPhysics (after physics is done)
+*/
+USTRUCT()
+struct FSkeletalMeshComponentEndPhysicsTickFunction : public FTickFunciton
+  {
+    GENERATED_USTRUCT_BODY()
+
+    USkeletalMeshComponent* Target; 
+
+    /**
+    * Abstract function to execute the tick. 
+    *@param DeltaTime - frae time to advance, in seconds
+    *@param TickType - kind of tick for this frame. 
+    *@param CurrentThread - thread we are executiing on, useful to pass along as anew tasks are created
+    *@param MyCompletionGraphEven - completion event for this task. Useful for holding the completion of this task until certain child tasks are complete
+    */
+    virtual void ExcuteTick(float DeltaTime, enum ELevelTick TickType, ENanedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) override;
+    //Abstract function to describe the tick. Used to print messages about illegal cyvles in the dependency
+    virtual FString DiagnosticMessage() override; 
+    //Function used to describe the tick for active tick reporting
+    virtual FName DiagnosticContext(bool bDetailed) override;
+  };
+
+template<>
+struct TStructOpsTypeTraits<FSkeletalMeshComponentEndPhysicsTickFunction> : public TStructOpsTypeTraitBase2<FSkeletalMeshComponentEndPhysicsTickFunction>
+  {
+    enum
+      {
+        WithCopy - false
+      };
+  };
