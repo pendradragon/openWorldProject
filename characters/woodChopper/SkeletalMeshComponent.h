@@ -292,3 +292,24 @@ struct FClosesrPointOnPhysicsAsset
     {
     }
   };
+
+/**
+*SkeletalMeshComponent is usd to create an instance of an animated SkeletalMesh asset.
+  *
+  *@see https://docs.unrealngine.com/latest/INT/Engine/Content/Types/SkeletalMeshes/
+  *@see USkeletalMesh
+*/
+UCLASS(Blueprintable, ClassGroup=(Rendering, Common), hidecategories=(Object, "Mesh|SkeltalAsset"), config=Engine, editinlinenew, meta=(BlueprintSpawnableComponent), MinimalAPI)
+class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_CollisionDataProvider
+  {
+    GENERATED_UCLASS_BODY()
+
+    friend class FSkinnedMeshComponentRecreateRenderStateContext;
+    friend class FParallelAnimationCompletionTask;
+    friend class USkeletalMesh;
+    friend class UAnimInstance;
+    friend struct FAnimNode_LinkedAnimGraph;
+    friend struct FAnimNode_LinkedAnimLayer;
+    friend struct FLinkedInstanceAdapater;
+    friend struct FLinkedAnimLayerClassData; 
+    friend struct FRigUnit_AnimNextWriteSkeletalMeshComponentPose;
