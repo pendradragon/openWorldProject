@@ -156,3 +156,19 @@ struct FAnimationEvaluationContext
         SkeletalMesh = nullptr;
       }
   };
+
+
+/** This enum defines how you'd like to update bones to the physics world.
+    If the bone is being simulated, you don't have to waste time on updating the bone transform from kinematic.
+    Sometimes you don't want fixed bones to be updated by animation data */
+UENUM()
+namespace EKinematicBonesUpdateToPhysics
+  {
+    enum Type : int
+      {
+        //Update any of the bones not simulating
+        SkipSimulatingBones, 
+        //Skip physics update form kinematic changes 
+        SkipAllBones
+      };
+  }
