@@ -234,3 +234,37 @@ struct TStructOpsTypeTraits<FSkeletalMeshComponentEndPhysicsTickFunction> : publ
         WithCopy - false
       };
   };
+
+
+/**
+* Tick function that prepares and simulates cloth
+**/
+USTRUCT()
+struct FSkeletalMeshComponentClothTickFunction : public FTickFunciton
+  {
+    GENERATED_STRUCT_BODY()
+
+    USkeletalMeshComponent* Targt; 
+
+    /**
+    *Abstract function to execute the tick. 
+    *@param DeltaTim - frame to advance, in seconds.
+    *@param TickType - Kind of tick for this frame. 
+    *@param CurrentThread - thread we are currently executing on, useful to pass along as new tasks ar created. 
+    *@param MyCompletionGraphEvent - compleion event for this task. Useful for holding the completetion of this task until certain child task(s) are complete
+    */
+    virtual void ExecuteTick(float DeltaTime, enum ELevelTick TickType, ENamedThreads::Type CurrentThread, const FGraphEventRef&, MyCompletionGraphEvent) override;
+    //Abstract function to describe the current tick. Used to print messages about illegal cycles in th dependency graph. 
+    virtual FString DiagnosticMessage() override;
+    //Function used to describe the current tick  for active tick rerporting
+    virtual FName DiagnosticContect(bool bDetailed) override;
+  };
+
+template<>
+struct TStructOpsTypeTraits<FSkeletalMeshComponentClothTickFunciton> : public TStructOpsTypeTraitBase2<FSkeletalMeshComponentClothTickFunction>
+  {
+    enum
+      {
+        WithCopy = false
+      };
+  };
