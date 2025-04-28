@@ -60,3 +60,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBoneTransformsFinalized);
 
 DECLARE_TS_MULTICAST_DELEGARE_ThreeParams(FOnLODRequiredBonesUpdateMulticast, USkeltalMeshComponent*, int32, const TArray<FBoneIndexType>&);
 typedef FOnLODRequiredBonesUpdateMulticast::FDelgate FOnLODRequiredBonesUpdate;
+
+/** Method used when retrieving an attribute value*/
+UENUM()
+enum class ECustomBoneAttributeLookup : uint8
+  {
+    //Only look for the attribute using the provided bone (name)
+    BoneOnly, 
+    //Look for the attribute using th provided bone (name) and uts direct parent bone
+    ImmediateParent, 
+    //Look for the attribute using the provided bone (name) and its dirct bone parent hierarchy up and until the root bone
+    ParentHierarchy
+};
