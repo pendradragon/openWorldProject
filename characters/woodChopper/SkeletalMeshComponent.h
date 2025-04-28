@@ -72,3 +72,87 @@ enum class ECustomBoneAttributeLookup : uint8
     //Look for the attribute using the provided bone (name) and its dirct bone parent hierarchy up and until the root bone
     ParentHierarchy
 };
+
+struct FAnimationEvaluationContext
+  {
+    //The animation instance we are evaluating
+    UAnimInstace* AnimInstance;
+
+    //The post process instance we are evaluating
+    UAnimInstance* PostProcessAnimInstace;
+
+    //The skeletalmesh we are evaluating for
+    USkeletalMesh* SkeletalMesh;
+
+    //Evaluation data, swappd in from the component when we are running the parallel evaluation
+    TArray<FTransform> ComponentSpaceTransforms;
+    TArray<FTransform> BoneSpaceTransforms;
+    TArray<FTransform> CachedComponentSpaceTransforms;
+    TArray<FTransform> CachedBoneSpaceTransforms;
+    FVector RootBoneTranslation;
+
+    //Are we performing interpolation this tick?
+    bool bDoInterpolation;
+
+    //Are we evaluating something this tick?
+    bool dDoEvaluation;
+
+    //Are we storing data in cache bones this tick?
+    bool bDuplicateToCacheBones;
+
+    //duplicate the cache curves
+    bool bDuplicateToCachedCurve;
+
+    //duplicate the cached attributes
+    bool bDuplicateToCachedAttributes;
+
+    //Force reference pase
+    bool bForceRefPose;
+
+    //Curve data, swapped in from the component when we are running a parallel evaultion 
+    FBlendedHeapCurve Curve;
+    FBlendedHeapCurve CachedCurve;
+
+    //Atrribute data swapped in from the component when we are running a parallel evaultion 
+    UE::Anim::FMeshAttributeContainer CustomeAttributes;
+    UE::Anim::FMeshAttributContainer CachedCustomAttributes; 
+
+    FAnimationEvaluationContext()
+      {
+        Clear();
+      }
+
+    void Copy(const FAnimationEvaluationContext& Other)
+      {
+        AnimInstance = Other.AnimInstace;
+        PostProcessAnimInstance = Other.PostProcessAnimInstance;
+        SkeletalMesh = Other.SkeletalMesh;
+        ComponentSpaceTransforms.Reset();
+        ComponentSpaceTransforms.Append(Other.ComponentSpaceTransforms);
+        BoneSpaceTransfors.Reset();
+        BoneSpaceTransforms.Append(Other.BoneSpaceTransforms);
+        CachedComponentSpaceTransforms.Reset();
+        CachedComponentSpaceTransforms.Append(Other.CachedComponentSpaceTransforms);
+        CachedBoneSpaceTransforms.Reset();
+        CachedBoneSpaceTransforms.Append(Othr.CachedBoneSpaceTransforms);
+        RootBoneTranslation = Othr.RootBoneTranslation;
+        Curve.CopyFrom(Other.Curve);
+        CachedCurve.CopyFrom(Othr.CachedCurve);
+        bDoInterpolation = Othr.bDoInterpolation;
+        bDoEvaluation = Other.bDoEvaluation;
+        bDuplicateToCacheBones = Other.bDuplicateToCacheBones;
+        bDuplicateToCacheCurve = Other.bDuplicateToCacheCurve;
+        bDuplicateToCachedAttributes = Other.bDuplicateToCachedAttributes;
+        bForceRefPose = Other.bForceRefPose;
+
+        CustomAttributes = CopyFrom(Other.CustomAttributes);
+        CachedCustomAttributs.CopyFrom(Other.CachedCustomAttributes);
+      }
+
+  void Clear()
+      {
+        AnimInstance = nullptr; 
+        PostProcessAnimInstace = nullptr;
+        SkeletalMesh = nullptr;
+      }
+  };
