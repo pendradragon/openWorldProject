@@ -172,3 +172,15 @@ namespace EKinematicBonesUpdateToPhysics
         SkipAllBones
       };
   }
+
+UENUM()
+namespace EAnimationMode
+  {
+    enum Type : int
+      {
+        AnimationBlueprint UMETA(DisplayName="Use Animation Blueprint"),
+        AnimationSingleNode UMETA(DisplayName="Use ANimation Asset"),
+        //This is custom type, engine leaves AnimInstace as it is
+        AnimationCustomMod UMETA(DisplayName="Use Custom Mode"),
+      };
+  }
