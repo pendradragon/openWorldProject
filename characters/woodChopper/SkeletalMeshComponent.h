@@ -268,3 +268,27 @@ struct TStructOpsTypeTraits<FSkeletalMeshComponentClothTickFunciton> : public TS
         WithCopy = false
       };
   };
+
+
+struct FClosesrPointOmPhysicsAsset
+  {
+    //The closest point in world space
+    FVector ClosestWorldPosition; 
+
+    //The normal associateed with the surface of the closest body
+    FVector Normal;
+
+    //The name of the onne associateed with the closest body
+    FName BoneName;
+
+    //The distance of the closest point and the original point and the original world position. 0 Indicates world position is inside the closest body
+    float Distance;
+
+    FClosestPointOnPhysicsAsset()
+        :ClosestWorldPosition(FVector::ZeroVector)
+        , Normal(FVector::ZeroVector)
+        , BoneName(NAME_None)
+        , Distance(-1.f)
+    {
+    }
+  };
