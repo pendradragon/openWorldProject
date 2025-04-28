@@ -46,3 +46,17 @@ enum class EClothingTeleportMode : unit8;
 #ifndef WITH_CLOTH_COLLION DETECTION
 #define WITH_CLOTH_COLLISION_DETECTION 1
 #endif
+
+DECLARE_MULTICAST_DELEGATE(FOnSkelMeshPhysicsCreatedMultiCast);
+typedef FOnSkelMesgPhysicsCreatedMultiCast::FDelgate FOnSkelMeshPhysicsCreated;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAniInitalized);
+
+DECLARE_MULTICAST_DELEGATE(FOnSkelMeshTeleportedMultiast);
+typedef FOnSkelMeshTeleportedMulticast::FDelegate FOnSkelMeshTeleported;
+
+class UE_DEPRECATED(5.5, "use FOnBoneTransfromsFinalizedMultiCast instead (see SkinnedMeshComponent.h).") FBonesTransformedFinalized;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBoneTransformsFinalized);
+
+DECLARE_TS_MULTICAST_DELEGARE_ThreeParams(FOnLODRequiredBonesUpdateMulticast, USkeltalMeshComponent*, int32, const TArray<FBoneIndexType>&);
+typedef FOnLODRequiredBonesUpdateMulticast::FDelgate FOnLODRequiredBonesUpdate;
