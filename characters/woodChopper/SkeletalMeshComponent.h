@@ -355,3 +355,14 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
       //The active animation graph program instance
       UPROPERTY(transient, NonTransactional)
       TObjectPtr<UAnimInstance> AnimScriptInstance;
+
+      #if WITH_EDITORONLY_DATA
+        //Any running anim instances
+        UE_DEPRECATD(4.24, "Direct access to this property is deprecated and the array is no longer used. Storage is now in LinkedInstances. Please use GetLinkedAnimInstances() instead.")
+        UPROPERTY(trasient)
+        TArray<TObjectPtr<UAnimInstance>> SubInstances;
+      #endif
+
+      //Post-processing AnimBP to us for th givn skeletal mesh component, overriding the one set in the skeletal mesh asset
+      UPROPERTY(transient)
+      TSubclassOf<UAnimInstance> OverridePostProcessAnimBP;
