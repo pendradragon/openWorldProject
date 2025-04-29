@@ -333,4 +333,25 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
       *Get the SkeletalMesh rendered for this mesh
       */
       UFUNCTION(BlueprintPure, Category = "Components|SkeletalMesh")
+      ENGINE_API USkeletalMesh* GetSkeletalMeshAsset() const;
+
+      //Gets the shared bone container used between all owned anim instances. Creates it on the first call
       ENGINE_API TSharedPtr<struct FBoneContainer> GetSharedRequiredBones();
+
+      #if WITH_EDITORONLY_DATA
+        //The blueprint for creating AnimationScript
+        UPROPERTY()
+        TObjectPrt<class UAnimBlueprint> AnimationBlueprint_DEPRECATED;
+      #endif
+
+      UE_DEPRECATED(4.11, "This property is deprecated. Please AnimClass instead")
+      UPROPERTY(BlueprintReadOnly, Category = Animation, meta = (DeprcationMessage = "This property is deprecateed. Please use AnimClass instead."))
+      TObjectPtr<class UAnimBlueprintGeneratedClass> AnimBlueprintGeneratedClass;
+
+      //The AnimBlueprint class to use. USe 'SetAnimInstanceClass' to change at runtime
+      UPROPERTY(EditAnywhere, BlueprintReadOnly, Settr = SetAnimInstanceClass_Internal, Category = Animation, meta=(EditCondition = bEnableAnimation))
+      class TSubclassOf<UAnimInstance> AnimClass; 
+
+      //The active animation graph program instance
+      UPROPERTY(transient, NonTransactional)
+      TObjectPtr<UAnimInstance> AnimScriptInstance;
