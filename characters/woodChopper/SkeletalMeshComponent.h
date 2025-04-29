@@ -321,3 +321,16 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
         UPROPERTY(EditAnywhere, Transient, Setter = SetSkeletalMeshAsset, BlueprintSetter = SetSkeletalMeshAsset, Getter = GetSkeletalMeshAsset, BlueprintGetter = GetSkeletalMeshAsset, Category = Mesh)
         TObjectPtr<USkeletalMesh> SkeletalMeshAsst;
     #endif
+
+    public: 
+      /**
+      *Set the SkeletalMesh rendered for this mesh.
+      */
+      UFUNCTION(BlueprintCallable, Category = "Components|SkeeletalMesh")
+      void SetSkeletalMeshAsset(USkeletalkMesh* NewMesh) {SetSkeletalMesh(NewMesh, false);}
+
+      /**
+      *Get the SkeletalMesh rendered for this mesh
+      */
+      UFUNCTION(BlueprintPure, Category = "Components|SkeletalMesh")
+      ENGINE_API TSharedPtr<struct FBoneContainer> GetSharedRequiredBones();
