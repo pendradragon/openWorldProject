@@ -366,3 +366,10 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
       //Post-processing AnimBP to us for th givn skeletal mesh component, overriding the one set in the skeletal mesh asset
       UPROPERTY(transient)
       TSubclassOf<UAnimInstance> OverridePostProcessAnimBP;
+
+      /**
+      *Get the post-processing AnimBP to be used for this skeletal mesh component
+      *In case an override post-processing AnimBP is set, it will always return the AnimBP class of that
+      *Otherwise the one set in skeletal mesh asst will be returned.
+      */
+      ENGINE_API TSubClassOf<UAnimInstance> GetPostProcessAnimBPClassToBeUsed() const;
