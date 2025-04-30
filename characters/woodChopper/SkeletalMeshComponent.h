@@ -373,3 +373,9 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
       *Otherwise the one set in skeletal mesh asst will be returned.
       */
       ENGINE_API TSubClassOf<UAnimInstance> GetPostProcessAnimBPClassToBeUsed() const;
+
+      /* An instance created from th PostPhysicsBlueprint property of the skeletal mesh we're using, 
+        *Runs after (and receives pose from) th main anim instance. 
+      */
+      UPROPERTY(transient)
+      TObjectPtr<UAnimInstance> PostProcessAnimInstance;
