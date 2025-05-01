@@ -379,3 +379,44 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
       */
       UPROPERTY(transient)
       TObjectPtr<UAnimInstance> PostProcessAnimInstance;
+
+      public:
+        /*
+        *Set the post-processing AnimBP to being used for this skeletal mesh component
+        *In case an override post-processing AnimBP is set, the one set in skeletal mesh asset will be ignored and not used.
+        *@param ReinitAnimInstacs can be false when called e.g. from the contruction script in a Blueprint
+        *                          the game is running and the anim instances need to be re-initalized
+        */
+        UFUNCTION(Blueprint Callable, Category = "Components|SkeletalMesh")
+        ENGINE_API void SetOverridePostProcessAnimBP(TSubclassOf<UAnimInstance> InPostProcessAnimBlueprint, bool ReinitAnimInstance = true);
+
+        //Toggles whether th post process blueprint will run for this component
+        UFUNCTION(BlueprintCallable, Category = "Comoponents|SkeletalMesh")
+        ENGINE_API void ToggleDisablePostProcessBlueprint();
+
+        //Get whether the post process blueprint is currently disabled for this component
+        UFUNCTION(BlueprintGetter)
+        ENGINE_API bool GetDisablePostProcessBlueprint() const;
+
+        /*
+        * If it is not currently running, and is st to run, the instance will be reinitalized
+        */
+        UFUNCTION(BlueprintSetter)
+        ENGINE_API void SetDisablePostProcessBlueprint(bool bINDisablePostProcess);
+
+        UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Animation, meta = (ShowOnlyInnerProperties, EditCondition = bEnableANimation))
+        struct FSingleAnimationPlayData AnimationData;
+
+        //this is an explict copy because this buffer is resued during evaluation
+        //we want to have reference an emptied during evaluation
+        ENGINE_API TArray<FTransform> GetBoneSpaceTransforms();
+
+        //Get th bone space transforms as an array view
+        ENGINE_API TArrayView<const FTransform> GetBoneSpaceTransformsView();
+
+        /*
+        *Temporary array of local-space (relative to parent bone) rotation/translation for each bone.
+        *This property is not saf to accss during evaluation, so we created wrapper
+        */
+        UE_DEPRECEATED(4.23, "Direct access to this property is deprecated, please use GetBoneSpaceTransforms instead. We will move to private in th future.")
+        TArray<FTransform> BoneSpaceTransforms;
