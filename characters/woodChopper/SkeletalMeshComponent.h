@@ -483,7 +483,7 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
       *@return Whether or not the atttribute was successfully retrieved
       */
     	UFUNCTION(BlueprintCallable, Category = CustomAttributes)
-	    ENGINE_API bool GetTransformAttribute_Ref(const FName& BoneName, const FName& AttributeName, UPARAM(ref) FTransform& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+	ENGINE_API bool GetTransformAttribute_Ref(const FName& BoneName, const FName& AttributeName, UPARAM(ref) FTransform& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
       
       /** 
       * Get integer type attribute value.
