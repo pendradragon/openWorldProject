@@ -460,3 +460,107 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
       //Current and cached atrubute evaluation data, used for Update Rate optimization
       UE::Anim::FMeshAttributeContainer CachedAttributes;
       UE::Anim::FMeshAttributeContainer CustomAtributes;
+    public:
+      /*
+      *Get float type attribute value
+
+      *@param BoneName Name of the bone to retrieve try and retrieve the attribute from
+      *@param AttributeName Nam eof the attribute to retrieve
+      *@param OutValue (reference) Retrieved atrribute value if found othrwise is set to DefaultValue
+      *@param LookupType Dtermines how th attribute is from the specified BoneName (se CUtsomBoneAttributeLookup)
+      *@return Whether or not the attribute was successfully retrieved
+      */
+      UFUNCTION(BlueprintCallable, Category = Category=CustomAttributes)
+      ENGINE_API bool GetFloatAttribute_Ref(const FName& BoneName, const FName& AttributeNAme, UPARAM(ref) float& OutValue, ECustomBonAttributeLookup LookupType = ECustomBoneAttribute::BoneOnly);
+
+      /*
+      *Get FTransform type attributee value.
+
+      *@param BoneName Name of the bone to retrieve try and retrieve th attribute from 
+	    *@param AttributeName Name of the attribute to retrieve
+      *@param OutValue (reference) Retrieved attribute value if found, otherwise is set to DefaultValue
+      *@param LookupType Determines how the attribute is retrieved from the specified BoneName (see ECustomBoneAttributeLookup)
+      *@return Whether or not the atttribute was successfully retrieved
+      */
+    	UFUNCTION(BlueprintCallable, Category = CustomAttributes)
+	    ENGINE_API bool GetTransformAttribute_Ref(const FName& BoneName, const FName& AttributeName, UPARAM(ref) FTransform& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+      
+      /** 
+      * Get integer type attribute value.
+      
+       * @param BoneName Name of the bone to retrieve try and retrieve the attribute from
+       * @param AttributeName Name of the attribute to retrieve
+       * @param OutValue (reference) Retrieved attribute value if found, otherwise is set to DefaultValue
+       * @param LookupType Determines how the attribute is retrieved from the specified BoneName (see ECustomBoneAttributeLookup)
+       * @return Whether or not the atttribute was successfully retrieved
+        */
+      UFUNCTION(BlueprintCallable, Category = CustomAttributes)
+      ENGINE_API bool GetIntegerAttribute_Ref(const FName& BoneName, const FName& AttributeName, UPARAM(ref) int32& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+        
+          /** 
+         * Get string type attribute value.
+        
+         * @param BoneName Name of the bone to retrieve try and retrieve the attribute from
+         * @param AttributeName Name of the attribute to retrieve
+         * @param OutValue (reference) Retrieved attribute value if found, otherwise is set to DefaultValue
+         * @param LookupType Determines how the attribute is retrieved from the specified BoneName (see ECustomBoneAttributeLookup)
+         * @return Whether or not the atttribute was successfully retrieved
+        */
+      UFUNCTION(BlueprintCallable, Category = CustomAttributes)
+      ENGINE_API bool GetStringAttribute_Ref(const FName& BoneName, const FName& AttributeName, UPARAM(ref) FString& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+     
+      /** 
+       * Get float type attribute value.
+      
+       * @param BoneName Name of the bone to retrieve try and retrieve the attribute from
+       * @param AttributeName Name of the attribute to retrieve
+       * @param DefaultValue In case the attribute could not be found
+       * @param OutValue Retrieved attribute value if found, otherwise is set to DefaultValue
+       * @param LookupType Determines how the attribute is retrieved from the specified BoneName (see ECustomBoneAttributeLookup)
+       * @return Whether or not the atttribute was successfully retrieved
+      */
+      UFUNCTION(BlueprintCallable, Category = CustomAttributes)
+      ENGINE_API bool GetFloatAttribute(const FName& BoneName, const FName& AttributeName, float DefaultValue, float& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+
+      /**
+       * Get FTransform type attribute value.
+      
+       * @param BoneName Name of the bone to retrieve try and retrieve the attribute from
+       * @param AttributeName Name of the attribute to retrieve
+       * @param OutValue (reference) Retrieved attribute value if found, otherwise is set to DefaultValue
+       * @param LookupType Determines how the attribute is retrieved from the specified BoneName (see ECustomBoneAttributeLookup)
+       * @return Whether or not the atttribute was successfully retrieved
+      */
+      UFUNCTION(BlueprintCallable, Category = CustomAttributes)
+      ENGINE_API bool GetTransformAttribute(const FName& BoneName, const FName& AttributeName, FTransform DefaultValue, FTransform& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+      
+      /** 
+       * Get integer type attribute value.
+      
+       * @param BoneName Name of the bone to retrieve try and retrieve the attribute from
+       * @param AttributeName Name of the attribute to retrieve
+       * @param DefaultValue In case the attribute could not be found
+       * @param OutValue Retrieved attribute value if found, otherwise is set to DefaultValue
+       * @param LookupType Determines how the attribute is retrieved from the specified BoneName (see ECustomBoneAttributeLookup)
+       * @return Whether or not the atttribute was successfully retrieved
+      */
+      UFUNCTION(BlueprintCallable, Category = CustomAttributes)
+      ENGINE_API bool GetIntegerAttribute(const FName& BoneName, const FName& AttributeName, int32 DefaultValue, int32& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+    	
+      /** 
+    	 * Get string type attribute value.
+    
+    	 * @param BoneName Name of the bone to retrieve try and retrieve the attribute from
+    	 * @param AttributeName Name of the attribute to retrieve
+    	 * @param DefaultValue In case the attribute could not be found
+         * @param OutValue Retrieved attribute value if found, otherwise is set to DefaultValue
+    	 * @param LookupType Determines how the attribute is retrieved from the specified BoneName (see ECustomBoneAttributeLookup)
+    	 * @return Whether or not the atttribute was successfully retrieved
+    	*/
+    	UFUNCTION(BlueprintCallable, Category = CustomAttributes)
+    	ENGINE_API bool GetStringAttribute(const FName& BoneName, const FName& AttributeName, FString DefaultValue, FString& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
+    
+    protected:
+    	/** Templated version to try and retrieve a typed bone attribute's value */
+    	template<typename DataType, typename CustomAttributeType>
+    	bool FindAttributeChecked(const FName& BoneName, const FName& AttributeName, DataType DefaultValue, DataType& OutValue, ECustomBoneAttributeLookup LookupType);	
