@@ -565,4 +565,32 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
     	template<typename DataType, typename CustomAttributeType>
     	bool FindAttributeChecked(const FName& BoneName, const FName& AttributeName, DataType DefaultValue, DataType& OutValue, ECustomBoneAttributeLookup LookupType);	
 
+    public:
+	// Used to scale speed of all animations on this skeletal mesh. 
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=Animation, meta=(EditCondition = bEnableAnimation, ClampMin = 0.f))
+	float GlobalAnimRateScale;
+	
+	// If we are running physics, should we update non-simulated bones based on the animation bone positions. 
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=SkeletalMesh)
+	TEnumAsByte<EKinematicBonesUpdateToPhysics::Type> KinematicBonesUpdateType;
+	
+	// Whether physics simulation updates component transform. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Physics)
+	TEnumAsByte<EPhysicsTransformUpdateMode::Type> PhysicsTransformUpdateMode;
+	
+	// whether we need to teleport cloth. 
+	UPROPERTY(Interp, Transient, BlueprintReadOnly, VisibleAnywhere,  Category=Clothing) // This property is explicitly hidden from the details panel inside FSkeletalMeshComponentDetails::UpdatePhysicsCategory
+	EClothingTeleportMode ClothTeleportMode;
 
+    protected:
+	// Whether to use Animation Blueprint or play Single Animation Asset. 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animation, meta=(EditCondition = bEnableAnimation))
+	TEnumAsByte<EAnimationMode::Type>	AnimationMode;
+    public:
+	// helper function to get the member name and verify it exists, without making it public
+	static ENGINE_API const FName& GetAnimationModePropertyNameChecked();
+
+	// helper function to get the member name and verify it exists, without making it public
+    #if WITH_EDITORONLY_DATA
+	static ENGINE_API FName GetSkeletalMeshAssetPropertyNameChecked();
+    #endif // WITH_EDITORONLY_DATA
