@@ -420,3 +420,43 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
         */
         UE_DEPRECEATED(4.23, "Direct access to this property is deprecated, please use GetBoneSpaceTransforms instead. We will move to private in th future.")
         TArray<FTransform> BoneSpaceTransforms;
+
+      public: 
+        //offset of the root bone from the reference pose. Used to offset bounding box
+        UPROPERTY(transient)
+        FVector RootBoneTranslation; 
+
+        //If bEnableLinCheckWithBounds is true, the scale of the bounds by this valu before doing line check
+        UPROPERTY()
+        FVector LineCheckBoundsScale;
+
+        //Temporary storage for curves
+        FBlendedHeapCurve AnimCurves;
+
+        //Access cached component space transforms
+        ENGINE_API const TArray<FTransform>& GetCachedComponentSpaceTransforms() const;
+
+    private:
+      //Any running linked anim instances
+      UPROPERTY(transient)
+      TArray<TObjectPtr<UAnimInstance>> LinkedInstances;
+
+      //Shared bone container betwee all anim instances owned by this skeletal mesh component
+      TSharedPtr<struct FBoneContainer> SharedRequiredBones;
+
+      //Update Rate
+
+      //Cached BoneSpaceTransforms for Update Rate optimization
+      UPROPERTY(Transiet)
+      TArray<FTransform> CachedBoneSpaceTransforms;
+
+      //Cached SpaceBases for Update Race optimization
+      UPROPERTY(Transient)
+      TArray<FTransform> CachedComponentSpaceTransforms;
+
+      //Cached Curve result for Update Rate optimization 
+      FBlendedHeapCurve CachedCurve;
+
+      //Current and cached atrubute evaluation data, used for Update Rate optimization
+      UE::Anim::FMeshAttributeContainer CachedAttributes;
+      UE::Anim::FMeshAttributeContainer CustomAtributes;
