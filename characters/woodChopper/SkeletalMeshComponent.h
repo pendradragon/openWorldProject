@@ -561,6 +561,8 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
     	ENGINE_API bool GetStringAttribute(const FName& BoneName, const FName& AttributeName, FString DefaultValue, FString& OutValue, ECustomBoneAttributeLookup LookupType = ECustomBoneAttributeLookup::BoneOnly);
     
     protected:
-    	/** Templated version to try and retrieve a typed bone attribute's value */
+    	// Templated version to try and retrieve a typed bone attribute's value 
     	template<typename DataType, typename CustomAttributeType>
     	bool FindAttributeChecked(const FName& BoneName, const FName& AttributeName, DataType DefaultValue, DataType& OutValue, ECustomBoneAttributeLookup LookupType);	
+
+
