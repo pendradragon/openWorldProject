@@ -594,3 +594,70 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
     #if WITH_EDITORONLY_DATA
 	static ENGINE_API FName GetSkeletalMeshAssetPropertyNameChecked();
     #endif // WITH_EDITORONLY_DATA
+
+    private:
+	// Teleport type to use on the next update 
+	ETeleportType PendingTeleportType;
+
+	/** Controls whether or not this component will evaluate its post process instance. The post-process
+	 *  Instance is dictated by the skeletal mesh so this is used for per-instance control.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintGetter=GetDisablePostProcessBlueprint, BlueprintSetter=SetDisablePostProcessBlueprint, Category = Animation, meta=(EditCondition = bEnableAnimation))
+	uint8 bDisablePostProcessBlueprint:1;
+
+     public:
+	// Indicates that simulation (if it's enabled) is entirely responsible for children transforms. This is only ok if you are not animating attachment points relative to the simulation 
+	uint8 bSimulationUpdatesChildTransforms:1;
+
+	// Controls whether blending in physics bones will refresh overlaps on this component, defaults to true but can be disabled in cases where we know anim->physics blending doesn't meaningfully change overlaps 
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = Physics)
+	uint8 bUpdateOverlapsOnAnimationFinalize:1;
+
+	// Temporary fix for local space kinematics. This only works for bodies that have no constraints and is needed by vehicles. Proper support will remove this flag 
+	uint8 bLocalSpaceKinematics:1;
+
+	// If true, there is at least one body in the current PhysicsAsset with a valid bone in the current SkeletalMesh 
+	UPROPERTY(transient)
+	uint8 bHasValidBodies:1;
+
+
+	// Forces use of the physics bodies irrespective of whether they are simulated or using the physics blend weight 
+	UPROPERTY(transient)
+	uint8 bBlendPhysics:1;
+
+	/**
+	 *  If true, simulate physics for this component on a dedicated server.
+	 *  This should be set if simulating physics and replicating with a dedicated server.
+	 *	Note: This property cannot be changed at runtime.
+	 */
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = SkeletalMesh)
+	uint8 bEnablePhysicsOnDedicatedServer:1;
+
+	/** 
+	 * If true, then the physics bodies will be used to drive the skeletal mesh even when they are
+	 * kinematic (not simulating), otherwise the skeletal mesh will be driven by the animation input 
+	 * when the bodies are kinematic
+	 */
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = SkeletalMesh)
+	uint8 bUpdateMeshWhenKinematic:1;
+
+	/**
+	 *	If we should pass joint position to joints each frame, so that they can be used by motorized joints to drive the
+	 *	ragdoll based on the animation.
+	 */
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=SkeletalMesh)
+	uint8 bUpdateJointsFromAnimation:1;
+
+	/**
+	 * Toggles creation of cloth simulation. Distinct from the simulation toggle below in that, if off, avoids allocating
+	 * the actors entirely instead of just skipping the simulation step.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Clothing)
+	uint8 bAllowClothActors:1;
+
+	//  Disable cloth simulation and play original animation without simulation 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Clothing)
+	uint8 bDisableClothSimulation:1;
+
+	// Indicates that this SkeletalMeshComponent has deferred kinematic bone updates until next physics sim if not INDEX_NONE. 
+	int32 DeferredKinematicUpdateIndex;
