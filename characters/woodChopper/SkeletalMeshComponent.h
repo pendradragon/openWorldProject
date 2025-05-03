@@ -792,3 +792,16 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	// If true, propagates calls to ApplyAnimationCurvesToComponent for follower components, only needed if follower components do not tick themselves 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LeaderPoseComponent)
 	uint8 bPropagateCurvesToFollowers : 1;
+
+	#if WITH_EDITORONLY_DATA
+		UE_DEPRECATED(5.1, "This property is deprecated. Please Use bPropagateCurvesToFollowers instead")
+		unit8 bPropagateCurvesToSlaves : 1;
+	#enif //WITH_EDITORONLY_DATA
+
+	//Whether to skip UpdateKinematicBonesToAnim() when interpolating. Kinematic bones are updated to the target interpolation pose only on ticks when thy are evaluated. 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Optimization)
+	uint8 bSkipkinematicUpdateWhenInterpolating:1;
+
+	//Whether to skip boundsupdate when interpolating. Bounds are updated to the target interpolation pose only on ticks when they are evaluated
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Optimization)
+	unit8 bSkipBoundsUpdateWhenInterpolating:1;
