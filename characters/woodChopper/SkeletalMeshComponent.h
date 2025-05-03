@@ -805,3 +805,25 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	//Whether to skip boundsupdate when interpolating. Bounds are updated to the target interpolation pose only on ticks when they are evaluated
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = Optimization)
 	unit8 bSkipBoundsUpdateWhenInterpolating:1;
+
+    protected:
+
+	// Whether the clothing simulation is suspended (not the same as disabled, we no longer run the sim but keep the last valid sim data around) 
+	uint8 bClothingSimulationSuspended:1;
+
+    #if WITH_EDITORONLY_DATA
+	// If true, this will Tick until disabled 
+	UPROPERTY(AdvancedDisplay, EditInstanceOnly, transient, Category = SkeletalMesh)
+	uint8 bUpdateAnimationInEditor : 1;
+	// If true, will play cloth in editor 
+	UPROPERTY(AdvancedDisplay, EditInstanceOnly, transient, Category = SkeletalMesh)
+	uint8 bUpdateClothInEditor : 1;
+
+	// If true, DefaultAnimatingRigOverride will be used. If false, use the DefaultAnimatingRig in the SkeletalMesh 
+	UPROPERTY(AdvancedDisplay,EditAnywhere, Category = SkeletalMesh, meta = (InlineEditConditionToggle))
+	uint8 bOverrideDefaultAnimatingRig : 1;
+
+    #endif
+
+	// If true, OnSyncComponentToRBPhysics() notify will be called 
+	uint8 bNotifySyncComponentToRBPhysics : 1;
