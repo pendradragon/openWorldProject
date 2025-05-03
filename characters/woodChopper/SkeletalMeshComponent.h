@@ -605,7 +605,7 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	UPROPERTY(EditAnywhere, BlueprintGetter=GetDisablePostProcessBlueprint, BlueprintSetter=SetDisablePostProcessBlueprint, Category = Animation, meta=(EditCondition = bEnableAnimation))
 	uint8 bDisablePostProcessBlueprint:1;
 
-     public:
+    public:
 	// Indicates that simulation (if it's enabled) is entirely responsible for children transforms. This is only ok if you are not animating attachment points relative to the simulation 
 	uint8 bSimulationUpdatesChildTransforms:1;
 
@@ -661,3 +661,28 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	// Indicates that this SkeletalMeshComponent has deferred kinematic bone updates until next physics sim if not INDEX_NONE. 
 	int32 DeferredKinematicUpdateIndex;
+
+    private:
+	// Disable rigid body animation nodes and play original animation without simulation 
+	UPROPERTY(EditAnywhere, Category = Physics)
+	uint8 bDisableRigidBodyAnimNode:1;
+
+	// Disable animation curves for this component. If this is set true, no curves will be processed 
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = SkeletalMesh)
+	uint8 bAllowAnimCurveEvaluation : 1;
+
+	#if WITH_EDITORONLY_DATA
+		// DEPRECATED. Use bAllowAnimCurveEvaluation instead 
+		UE_DEPRECATED(4.18, "This property is deprecated. Please use bAllowAnimCurveEvaluatiuon instead. Note that the meaning is reversed.")	
+		UPROPERTY()
+		uint8 bDisableAnimCurves_DEPRECATED : 1;
+	#endif
+
+	// Whether or not we're taking cloth sim information from our leader component 
+	uint8 bBindClothToLeaderComponent:1;
+
+	// Flag denoting whether or not the clothing transform needs to update 
+	uint8 bPendingClothTransformUpdate:1;
+
+	// Flag denoting whether or not the clothing collision needs to update from its physics asset 
+	uint8 bPendingClothCollisionUpdate:1;
