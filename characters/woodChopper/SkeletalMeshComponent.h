@@ -686,3 +686,109 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	// Flag denoting whether or not the clothing collision needs to update from its physics asset 
 	uint8 bPendingClothCollisionUpdate:1;
+
+    public:
+	// can't collide with part of environment if total collision volumes exceed 16 capsules or 32 planes per convex 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Clothing)
+	uint8 bCollideWithEnvironment:1;
+	// can't collide with part of attached children if total collision volumes exceed 16 capsules or 32 planes per convex 
+ 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Clothing)
+	uint8 bCollideWithAttachedChildren:1;
+	/**
+	 * Forces the cloth simulation to constantly update its external collisions, at the expense of performance.
+	 * This will help to prevent missed collisions if the cloth's skeletal mesh component isn't moving,
+	 * and when instead, wind or other moving objects are causing new collision shapes to come into the cloth's vicinity.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Clothing)
+	uint8 bForceCollisionUpdate : 1;
+	
+	/**
+	 * Scale applied to the component induced velocity of all cloth particles prior to stepping the cloth solver.
+	 * Use 1.0 for fully induced velocity (default), or use 0.0 for no induced velocity, and any other values in between for a reduced induced velocity.
+	 * When set to 0.0, it also provides a way to force the clothing to simulate in local space.
+	 * This value multiplies to individual cloth's velocity scale settings, still allowing for differences in behavior between the various pieces of clothing within the same component.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Clothing, Meta = (UIMin = 0.f, UIMax = 1.f, ClampMin = 0.f, ClampMax = 1.f))
+	float ClothVelocityScale = 1.f;
+	
+	// reset the clothing after moving the clothing position (called teleport) 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Clothing)
+	uint8 bResetAfterTeleport:1;
+	
+	// To save previous state 
+	uint8 bPrevDisableClothSimulation : 1;
+	
+	/** 
+	 * Optimization
+	 */
+	
+	 // Whether animation and world transform updates are deferred. If this is on, the kinematic bodies (scene query data) will not update until the next time the physics simulation is run 
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category = SkeletalMesh)
+	uint8 bDeferKinematicBoneUpdate : 1;
+	
+	// Skips Ticking and Bone Refresh. 
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=SkeletalMesh)
+	uint8 bNoSkeletonUpdate:1;
+	
+	// pauses this component's animations (doesn't tick them, but still refreshes bones) 
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category=Animation, meta=(EditCondition = bEnableAnimation))
+	uint8 bPauseAnims:1;
+	
+	/**
+	 * Whether the built-in animation of this component should run when the component ticks.
+	 * It is assumed that if this is false then some external system will be animating this mesh.
+	 * Note that disabling animation will also cause cloth simulation not to run and the component's tick to run on any thread. 
+	 */
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category=Animation)
+	uint8 bEnableAnimation : 1;
+	
+	// On InitAnim should we set to ref pose (if false use first tick of animation data). If enabled, takes precedence over UAnimationSettings::bTickAnimationOnSkeletalMeshInit
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category = Animation, meta=(EditCondition = bEnableAnimation))
+	uint8 bUseRefPoseOnInitAnim:1;
+	
+	/**
+	* Uses skinned data for collision data.
+	*/
+	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadOnly, Category=SkeletalMesh)
+	uint8 bEnablePerPolyCollision:1;
+	
+	/**
+	 * Misc 
+	 */
+	
+	// If true, force the mesh into the reference pose - is an optimization. 
+	UPROPERTY()
+	uint8 bForceRefpose:1;
+	
+	/** If true TickPose() will not be called from the Component's TickComponent function.
+	* It will instead be called from Autonomous networking updates. See ACharacter. */
+	UPROPERTY(Transient)
+	uint8 bOnlyAllowAutonomousTickPose : 1;
+	
+	// True if calling TickPose() from Autonomous networking updates. See ACharacter. 
+	UPROPERTY(Transient)
+	uint8 bIsAutonomousTickPose : 1;
+	
+	// If bForceRefPose was set last tick. 
+	UPROPERTY()
+	uint8 bOldForceRefPose:1;
+	
+	// Bool that enables debug drawing of the skeleton before it is passed to the physics. Useful for debugging animation-driven physics. 
+	UPROPERTY()
+	uint8 bShowPrePhysBones:1;
+	
+	// If false, indicates that on the next call to UpdateSkelPose the RequiredBones array should be recalculated. 
+	UPROPERTY(transient)
+	uint8 bRequiredBonesUpToDate:1;
+	
+	// If true, AnimTree has been initialised. 
+	UPROPERTY(transient)
+	uint8 bAnimTreeInitialised:1;
+	
+	// If true, line checks will test against the bounding box of this skeletal mesh component and return a hit if there is a collision. 
+	UPROPERTY()
+	uint8 bEnableLineCheckWithBounds:1;
+	
+	// If true, propagates calls to ApplyAnimationCurvesToComponent for follower components, only needed if follower components do not tick themselves 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = LeaderPoseComponent)
+	uint8 bPropagateCurvesToFollowers : 1;
