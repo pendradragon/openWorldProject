@@ -838,3 +838,22 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
     public:
 	//Physcics-enigine representation of aggrgate which contains aphysics assest instance with more than numbers of bodies
 	FPhysicsAggregateHandle Aggregate;
+
+    public:
+
+	//Cache ANimCurveUidVersion from Skeleton and this will be used to identify if it needs to be updated
+	UPROPERTY(transient)
+	uint16 CachedAnimCuriveUidVersion;
+
+	/*
+	*weight to blend between simulated results and key-framed positions
+	*if weight if 1.0, shows only cloth simulation results and 0.0 will show only skinned results
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Interp, Category = Clothing)
+	float ClothBlendWeight;
+
+	/* Whether we should stall the Cloth tick task until the cloth simulation is complete. This is required if we want to up-to-date
+	*cloth data on the game thread, for example, if we want to generate particles at cloth vertices
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Cloting)
+	bool bWaitForParallelClothTask;
