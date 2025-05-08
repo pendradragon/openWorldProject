@@ -872,3 +872,17 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	*This is transint curves that will be ignored by animation systems if you choose this*/
 	UPROPERTY(transient)
 	TArray<FName> FilteredAnimCurves
+
+    public: 
+
+	/*
+	*Used for per-poly collision. In 99% of cases, you will be better off using a Physics Asset.
+	*This BodySetup is per instance because all modification of vertices is done in this place*/
+	UPROPERTY(transient)
+	TObjectPtr<class UBodySetup> BodySetup;
+
+	ENGINE_API void CreateBodySetup();
+
+	#if UE_ENABLED_DEBUG_DRAWING
+		ENGINE_API virtual void SendRender DebugPhysics(FPrimitiveSceneProxy* OverrideSceneProxy = nullptr) override;
+	#endif
