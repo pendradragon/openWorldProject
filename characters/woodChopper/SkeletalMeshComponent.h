@@ -886,3 +886,17 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	#if UE_ENABLED_DEBUG_DRAWING
 		ENGINE_API virtual void SendRender DebugPhysics(FPrimitiveSceneProxy* OverrideSceneProxy = nullptr) override;
 	#endif
+
+    public: 
+	
+	//Threshold for physics asset bodies abov which we use an aggregate foro boardphase collisions
+	int32 RagdollAggregateThreshold;
+
+	UPROPERTY(Interp, BlueprintReadWrite, Category = Clothing, meta = (UIMin = 0.0, UIMax = 10.0, ClampMin = 0.0, ClampMax = 10000.0))
+	float ClothMaxDistanceScalel
+
+	/** This scale is applied to all cloth geometry (e.g, cloth meshes and collisions) in ordre to simulate  in a different scale space than world. This scale is not applied to distance-based simulation parameters such as MaxDistance
+	*This proprty is currently only read by the cloth solver when creating cloth actor, by may become animatable in the futeure
+	**/ 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Interp, Category = Clothing, meta = (UIMin = 0.0, UIMax = 10.0, ClampMin = 0.0, ClampMax = 10000.0))
+	float ClothGeometryScale = 1.f;
