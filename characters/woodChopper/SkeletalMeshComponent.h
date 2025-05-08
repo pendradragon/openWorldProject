@@ -827,3 +827,10 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	// If true, OnSyncComponentToRBPhysics() notify will be called 
 	uint8 bNotifySyncComponentToRBPhysics : 1;
+
+    private:
+
+	UPROPERTY(Transient)
+	uint8 bNeedsQueuedAnimEventsDispacted:1;
+
+	unit8 bPostEvalutatingAnimation:1;
