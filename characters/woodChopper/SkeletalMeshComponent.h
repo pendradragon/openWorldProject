@@ -857,3 +857,18 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Cloting)
 	bool bWaitForParallelClothTask;
+
+    private:
+
+	//Whether the FilteredAnimCurces list is an allow or deny list
+	UPROPERTY(transient)
+	bool bFilteredAnimCurvesIsAllowList = false;
+
+	//Cache curve metadaa from mesh and this will be used to identify if it needs to be updated
+	UPROPERTY(transient)
+	uint16 CachedMeshCurveMetaDataVersion; 
+
+	/*You can choose to disabl certain cirvs if you prefer
+	*This is transint curves that will be ignored by animation systems if you choose this*/
+	UPROPERTY(transient)
+	TArray<FName> FilteredAnimCurves
