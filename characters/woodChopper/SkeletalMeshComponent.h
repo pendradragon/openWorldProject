@@ -834,3 +834,7 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	uint8 bNeedsQueuedAnimEventsDispacted:1;
 
 	unit8 bPostEvalutatingAnimation:1;
+
+    public:
+	//Physcics-enigine representation of aggrgate which contains aphysics assest instance with more than numbers of bodies
+	FPhysicsAggregateHandle Aggregate;
