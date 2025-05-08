@@ -909,3 +909,74 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	**/
 	UPROPERTY(EditAnywhere, AdvancedDisplay, BlueprintReadWrite, Category = Animation, meta = (DisplayName = "Post-Process AnimBP LOD Threshold", AllowPrivateAccess = "true"))
 	int32 PostProcessAnimBPLODThreshold = INDEX_NONE;
+
+    public: 
+	//Notification when constriant is broken
+	UPROPERTY(BlueprintAssignable)
+	FConstraintBrokenSignature OnConstraintBroken;
+
+	//Notification when constraint plasticity drive target changes
+	UPROPERTY(BlueprintAssignable)
+	FPlasticDformationEventSignature OnPlasticDeformation; 
+
+	//Class of the object responsible for 
+	UPROPERTY(EditAnywhere, Category = Clothing)
+	TSubOf<class UClothingSimulationFactory> ClothingSimulationFactory; 
+
+	struct FPendingRadalForces
+	{
+		enum EType
+		{
+			AddImpluse, 
+			AddForce, 
+		};
+
+		FVector Origin; 
+		float Radius; 
+		float Strength;
+		ERadialImpulseFalloff Fallof; 
+		bool bIgnoreMass;
+		EType Type; 
+		int32 FrameNum;
+
+		FPendingRadialForces(FVector InOrigin, float InRadius, float InStrength, ERadialImpluseFallof InFalloff, bool InIngoreMass, EType InType)
+			: Origin(InOrigin)
+			, Radius(InRadius)
+			, Strength(InStrength)
+			, Falloff(InFalloff)
+			, bIgnoreMass(InIgnoreMass)
+			, Type(InType)
+			, FrameNum(GFrameNumber)
+		{	
+		}
+	};
+
+	const TArray<FPendingRadialForces>& GetPendingRadialForces() const
+	{
+		return PendingRadialForces;	
+	}
+	//Array of physical interactions for the frame. This is a temporary solution for a more permanent force system and should not be used directly
+	TArray<FPendingRadialForces> PendingRadialForces;
+
+	UE_DEPRECATED(4.23, "This function is deprecated. Please use SetAnimInstaceClass instead.")
+	ENGINE_API virtual void K2_SetAnimInstaceClass(class UClass* NewClass);
+
+	//Set the anim instance class. Clears and re-initializes the anim instance with the nw class and sets animation mode to "AnimationBlueprint"
+	UE_DEPRECATED(5.5, "This function is deprecated. Please use 'SetAnimInstanceClass' instead")
+	ENGINE_API virtual void SetAnimClass(class UClass* NewClass);
+
+	//Get the anim instance class via getter callable by sequencer
+	UFUNCTION(BlueprintInstanceUseOnly)
+	ENGINE_API class UClass* GetAnimClass();
+
+	//Set the anim instance class. Clears and re-initalizes the anim instance with the nwe class and sets animation mode to "AnimationBlueprint"
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh", meta = (Keywords = "AnimBlueprint", DisplayName = "Set Anim Instance Class"))
+	ENGINE_API virtual void SetAnimInstanceClass(class UClass* NewClass);
+
+	/**
+	*Returns the animation instance that is driving the class (if availabl)e). This is typcially an instance of
+	*the class set as AnimBlueprintGeneratedClass (generatd by an animation blueprint)
+	*Since this instance is transient, it is not safe to be used during construction script
+	**/
+	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API class UAnimInstance* GetAnimInstance() const;
