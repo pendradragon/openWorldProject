@@ -980,3 +980,7 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	**/
 	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
 	ENGINE_API class UAnimInstance* GetAnimInstance() const;
+
+    private:
+	//Setter function for anim instance class 
+	void SetAnimInstanceClass_Internal(const TSubclassOf<UAnimInstance>& InAnimClass);
