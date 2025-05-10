@@ -1001,3 +1001,14 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	//If true, next time, that ConditionallyDispatchdQueuedAnimEvents() is calld it will trigger any queued animn notifies available
 	ENGINE_API void AllowQueuedAnimEventsNextDispatch();
+
+    private: 
+	PRAGMA_DISABLE_DEPERECATION_WARNINGS
+	TArray<TObjectPtr<UAnimInstance>>& GtLinkedAnimInstances {return LinkedInstances;}
+	ENGINE_API PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
+	//Clear the linked anim instancs and mark them pending kill
+	void ResetLinkedAnimInstances();
+
+	//Intrnal helper -- copis the mesh's reference pose to th local space. Transforms and regenerates component space transforms accordingly
+	void ResetToRefPose();
