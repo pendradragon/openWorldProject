@@ -1407,3 +1407,66 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 		*/
 		virtual void ClearAnimNotifyErrors(UObject* InSourceNotify){}
 	#endif
+
+    public: 
+	/** 
+	* Index of the 'Root Body', or top body in the asset hierarchy. 
+	* Filled in by InItInstance, so we don't need to save it. 
+	**/
+	//To save root body index/one index consistently
+	struct 
+	{
+		int32 BodyIndex;
+		FTransform TransformToRoot;
+	} RootBodyData;
+
+	//Set Root Body Index
+	ENGINE_API void SetRootBodyIndex(int32 InBodyIndex);
+	// Reset Root Body Index
+	ENGINE_API void ResetRootBodyIndex();
+
+	//Temporary array of bone indicies requird for this frame
+	TArray<FBoneIndexType> RequiredBones;
+
+	//Temporary array of bon indicies required to populate component space transforms
+	TArray<FBoneIndexType> FillComponentSpaceTransformsRequiredBones;
+
+	//Array of FBodyInstance objects, storing per-instance state about each body part
+	TArray<struct FBodyInstance*> Bodies;
+
+	//Array of FConstriantInstance structs, storing per-instance state about each constraint
+	TArray<struct FConstraintInstance*> Constraints;
+
+	FSkeletalMeshComponentClothTickFunction ClothTickFunction;
+
+	/**
+	* Gets the telportation rotation threshold. 
+	* 
+	* @return Threshold in degrees
+	**/ 
+	UFUNCTION(BlueprintGetter, Category=Clothing)
+	ENGINE_API float GetTeleportRotationThreshold() const;
+
+	/**
+	* Sets the teleportation rotation threshold
+	*
+	* @param threshold Threshold in degrees
+	**/ 
+	UFUNCTION(BlueprintSetter, Category=Clothing)
+	ENGINE_API void SetTeleportRotationThreshold(float Threshold);
+
+	/**
+	* Gets the teleportation distance threshold 
+	*
+	* @return Threshold value
+	**/ 
+	UFUNCTION(BlueprintGetter, Category=Clothing)
+	ENGINE_API float GetTeleportDistanceThreshold() const;
+
+	/** 
+	* Sets the teleportation distance threshold. 
+	* 
+	* @param threshold Threshold value
+	**/ 
+	UFUNCTION(BlueprintSetter, Category=Clothing)
+	ENGINE_API void SetTeleportDistanceThreshold(float Threshold);
