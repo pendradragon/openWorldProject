@@ -984,3 +984,20 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
     private:
 	//Setter function for anim instance class 
 	void SetAnimInstanceClass_Internal(const TSubclassOf<UAnimInstance>& InAnimClass);
+
+    public: 
+
+	/**
+	* Returns the active post-process instance if on is available. This is set on the mesh that this
+	* component is using, and is evaluated immediately after the main instance
+	**/
+	UFUNCTION(BlueprintCallable, Captegory = "Components|SkeletalMesh", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API UAnimInstance* GetPostProcessInstance() const;
+
+	//Get the anim instances lined to the main AnimScriptInstance
+	PRAGMA_DISABLE_DEPRECATION_WARNINGS
+	const TArray<UAnimInstance*>& GetLinkdAnimInstances() const {return LinkedInstances;}
+	PRAGMA_ENABLE_DEPRECATION_WARNINGS
+
+	//If true, next time, that ConditionallyDispatchdQueuedAnimEvents() is calld it will trigger any queued animn notifies available
+	ENGINE_API void AllowQueuedAnimEventsNextDispatch();
