@@ -1495,3 +1495,41 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	ENGINE_API void ComputeTeleportRotationThresholdInRadians();
 	ENGINE_API void ComputeTeleportDistanceThresholdInRadians();
+
+    public: 
+
+	//Checked whether we have already ticked this pose this frame
+	ENGINE_API bool PoseTickedThisFrame() const;
+
+	bool IsClothBoundToLeaderComponent() const { return bBindClothToLeaderComponent; }
+
+	UE_DEPRECATED(5.1, "This method has been deprecated. Please, use IsClothBoundToLeaderComponent instead.")
+	bool IsClothBoundToMasterComponent() const { return IsClothBoundToLeaderComponent(); }
+
+	//Get the current clothing simulation (read-only)
+	ENGINE_API const IClothingSimulation* GetClothingSimulation() const;
+
+	//Get the current clothing simulation (read/write)
+	ENGINE_API IClothingSimulation* GetClothingSimulation();
+
+	//Get the current clothing simulation context (read only)
+	ENGINE_API const IClothingSimulationContext* GetClothingSimulationContext() const;
+
+	//Get the currnt clothing simulation context (read/write)
+	ENGINE_API IClothingSimulationContext* GetClothingSimulationContext();
+
+	//Get the currnt interactor for the clothing simulation, if the current simulation supports runtime interaction 
+	UFUNCTION(BlueprintCallable, Category=Clothing)
+	ENGINE_API UClothingSimulationInteractor* GetClothingSimulationInteractor() const;
+
+	//Callback when the parallel clothing task finishes, copies needed data back to component for gamethread
+	ENGINE_API void CompleteParallelClothSimulation();
+
+	//Get th current simulation data mata for the clothing on this component. For use ont he game thread and only valid if bWaitForParallelClothTask is true
+	ENGINE_API const TMap<int32, FClothSimulData>& GetCurrentClothingData_GameThread() const;
+
+	//Get the current simulation data map for the clothing on this component. This will stall until th cloth simulation is complete
+	ENGINE_API const TMap<int32, FClothSimulData>& GetCurrentClothingData_AnyThread() const;
+
+	//Stalls on any currently running clothing simulations 
+	ENGINE_API void WaitForExistingParallelClothSimulation_GameThread();
