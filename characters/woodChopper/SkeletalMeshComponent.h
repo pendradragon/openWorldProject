@@ -1470,3 +1470,28 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	**/ 
 	UFUNCTION(BlueprintSetter, Category=Clothing)
 	ENGINE_API void SetTeleportDistanceThreshold(float Threshold);
+
+    private: 
+	/**
+	* Conduct teleportation if the character's movemnet is greater tham this threshold in 1 frame
+	* Zero or negative values will skip the check. 
+	* You can also do force teleport manually using ForceNextUpdateTeleport() / ForceNextUpdateTeleportAndReset().
+	**/ 
+	UPROPERTY(EditAnywhere, BlueprintGetter=GetTeleportDistanceThreshold, BlueprintSetter=SetTeleportDistanceThreshold, Category=Clothing)
+	float TeleportDistanceThreshold;
+
+	/**
+	* Rotation threshld in degrees, ranging from 0 to 100. 
+	* Conduct telportation if the character's rotation is greater than this threshold in 1 frame
+	* Zero or negatice values will skip the check
+	**/ 
+	UPROPERTY(EditAnywhere, BlueprintGetter=GetTeleportRotationThreshold, BlueprintSetter=SetTeleportRotationThreshold, Category=Clothing)
+	float TeleportRotationThreshold;
+
+	//Used for pre-computation using TeleportRotationThreshold property
+	float ClothTeleportCosineThresholdInRad;
+	//Used for pre-computation used tTeleportDistanceThreshold property
+	float ClothTeleportDistThresholdSquared;
+
+	ENGINE_API void ComputeTeleportRotationThresholdInRadians();
+	ENGINE_API void ComputeTeleportDistanceThresholdInRadians();
