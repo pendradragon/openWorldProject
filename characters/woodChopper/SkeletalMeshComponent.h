@@ -1588,3 +1588,12 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	//Gets the factory responsibl for building the clothing simulation and simulation contexts
 	ENGINE_API UClothingSimulationFactory* GetClothingSimFactory() const;
+
+    protected:
+
+	/** Simulation data written back to the componet after the simulation has taken place. If this data is required, 
+	* by any system other than rendering, bWaitForParallelClothTask must b true. If bWaitForParallelClothTask is false
+	* this data cannot be read on the game thread, and there must be a call to HandleExistingParallelCltohSimulation() prior
+	* to accessing it. 
+	**/
+	TMap<int32, FClothSimulData> CurrentSimulationData;
