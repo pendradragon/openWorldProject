@@ -1533,3 +1533,58 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	//Stalls on any currently running clothing simulations 
 	ENGINE_API void WaitForExistingParallelClothSimulation_GameThread();
+
+    private:
+
+	//Let the cloth tick and completion tasks have access to private clothing data
+	friend FSkeletalMeshComponentClothTickFunction;
+	friend class FParallelClothCompletionTask;
+
+	//Debug mesh component should be abl to access for visualization
+	friend class UDebugSkelMeshComponent;
+
+	//Copies the data from the external cloth simulation context. We copy instead of flipping because the API has to return the full struct to make backwards compat easy
+	ENGINE_API void UpdateClothSimulationContext(float InDeltaTime);
+
+	//Previous root bone matrix to compare the difference and decide to do clothing teleport
+	FMatrix	PrevRootBoneMatrix;
+
+	/**
+	* Clothing simulation objects. 
+	* ClothingSimulation is responsibl for maintaining and siulating clothing actors
+	* ClothingSimulationContext is a datastore for simulation daa snet to the clothing thread
+	**/ 
+	IClothingSimulation* ClothingSimulation;
+	IClothingSimulationContext* ClothingSimulationContext;
+
+	/**
+	* Object responsible for interacting with the clothing simulation 
+	* Blueprints and code can call/set data on this from the game thread and the next time
+	* it is safe to do so th interactor will sync to the simulation context
+	**/ 
+	UPROPERTY(Transient)
+	TObjectPtr<UClothingSimulationInteractor> ClothingInteractor;
+
+	//Array of sources of cloth collision 
+	TArray<FClothCollisionSource> ClothCollisionSources;
+
+	//Ref for the clothing parallel task, so we can detect whether or not a sim is running 
+	FGraphEventRef ParallelClothTask;
+
+	/** Whether we should stall the Cloth tick task until the cloth simulation is complete. This is required if we want up-to-date
+	* cloth data on the game thread, for example, if we want to generate particles and cloth vertices. When the data is not required
+	* except for rendering, we cn set this to false, to eliminate a potential game thread stall while we wait for the cloth sim
+	**/
+	ENGINE_API bool ShouldWaitForClothInTickFunction() const;
+
+	//Stalls on any currently running clothing simulations, needed when changing core sim state, or to access the clothing data
+	ENGINE_API void HandleExistingParallelClothSimulation();
+
+	/** Called by the clothing completion event to perform a writeback of the simulation data
+	* to the game thread, the task is friended to gain access to this and not allow any 
+	* external callers to trigger writebacks
+	**/ 
+	ENGINE_API void WritebackClothingSimulationData();
+
+	//Gets the factory responsibl for building the clothing simulation and simulation contexts
+	ENGINE_API UClothingSimulationFactory* GetClothingSimFactory() const;
