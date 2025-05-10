@@ -1012,3 +1012,398 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	//Intrnal helper -- copis the mesh's reference pose to th local space. Transforms and regenerates component space transforms accordingly
 	void ResetToRefPose();
+
+    public: 
+	UE_DEPRECATED(4.23, "This function is dprecated. Please use GetLinkedAnimGraphInsanceByTag")
+	UAnimInstance* GetSubInstanceByName(FName InTag) const {return GetLinkedAnimGraphInstanceByTag(InTag);}
+
+	UE_DEPRECATED(4.24, "This function is deprcated. Please use GetLinkedAnimGraphInstanceByTag")
+	UAnimInstance* GetSubInstanceByag(FName InTag) const {return GetLinkedAnimGraphInstanceByTag(InTag);}
+
+	/**
+	* Returns th tagged linked instance node. If no linked instances are found, or none are tagged with the 
+	* supplied name, this will return NULL
+	**/ 
+	UFUNCTION(BlueprintPure, Category = "Components|SkeletalMesh|Animation Blueprint Linking", meta = (Keywords = "Blueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API UAnimInstance* GetLinkedAnimGraphInstanceByTag(FName InTag) const;
+
+	UE_DEPRECATED(4.24, "Function renamed, please use GetLinkedAnimGraphInstanceByTag")
+	void GetSubInstancesByTag(FName InTag, TArray<UAnimInstance*>& OutSubInstances) const
+	{
+		PRAGMA_DISABLE_DEPRECATION_WARNINGS
+		GetLinkedAnimGraphInstancesByTag(InTag, OutSubInstances);
+		PRAGMA_ENABLE_DEPRECATION_WARNINGS
+	}
+
+	/**
+	* Returns all tagged linked instanc modes that match the tag.
+	**/
+	UE_DEPRECATED(5.0, "Tags are unique so this funciton is no longer supported. Please use GetLinkedAnimGraphInstanceByTag instead")
+	UFUNCTION(BlueprintPure, Category = "Components|SkeletalMesh|Animation Blueprint Linking", meta = (Keywords = "AnimBlueprint", DeprecatedFunction, DeprecationMessage="Tags are unique so this function is no longer supported. Please use GetLinkedAnimGraphInstanceByTag instead"))
+	ENGINE_API void GetLinkedAnimGraphInstancesByTag(FName InTag, TArray<UAnimInstance*>& OutLinkedInstances) const;
+	
+	UE_DEPRECATED(4.24, "Function renamed, please use LinkAnimGraphByTag")
+	void SetSubInstanceClassByTag(FName InTag, TSubclassOf<UAnimInstance> InClass) { LinkAnimGraphByTag(InTag, InClass); }
+	
+	// Runs through all nodes, attempting to find linked instance by name/tag, then sets the class of each node if the tag matches */
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh|Animation Blueprint Linking", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void LinkAnimGraphByTag(FName InTag, TSubclassOf<UAnimInstance> InClass);
+	
+	UE_DEPRECATED(4.24, "Function renamed, please use LinkAnimClassLayers")
+	void SetLayerOverlay(TSubclassOf<UAnimInstance> InClass) { LinkAnimClassLayers(InClass); }
+
+	/** 
+	 * Runs through all layer nodes, attempting to find layer nodes that are implemented by the specified class, then sets up a linked instance of the class for each.
+	 * Allocates one linked instance to run each of the groups specified in the class, so state is shared. If a layer is not grouped (ie. NAME_None), then state is not shared
+	 * and a separate linked instance is allocated for each layer node.
+	 * If InClass is null, then all layers are reset to their defaults.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh|Animation Blueprint Linking", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void LinkAnimClassLayers(TSubclassOf<UAnimInstance> InClass);
+	
+	UE_DEPRECATED(4.24, "Function renamed, please use UnlinkAnimClassLayers")
+	void ClearLayerOverlay(TSubclassOf<UAnimInstance> InClass) { UnlinkAnimClassLayers(InClass); }
+	
+	/** 
+	 * Runs through all layer nodes, attempting to find layer nodes that are currently running the specified class, then resets each to its default value.
+	 * State sharing rules are as with SetLayerOverlay.
+	 * If InClass is null, does nothing.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh|Animation Blueprint Linking", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void UnlinkAnimClassLayers(TSubclassOf<UAnimInstance> InClass);
+	
+	UE_DEPRECATED(4.24, "Function renamed, please use GetLinkedLayerInstanceByGroup")
+	UAnimInstance* GetLayerSubInstanceByGroup(FName InGroup) const { return GetLinkedAnimLayerInstanceByGroup(InGroup); }
+	
+	// Gets the layer linked instance corresponding to the specified group 
+	UFUNCTION(BlueprintPure, Category = "Components|SkeletalMesh|Animation Blueprint Linking", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API UAnimInstance* GetLinkedAnimLayerInstanceByGroup(FName InGroup) const;
+
+	UE_DEPRECATED(4.24, "Function renamed, please use GetLinkedAnimLayerInstanceByClass")
+	UAnimInstance* GetLayerSubInstanceByClass(TSubclassOf<UAnimInstance> InClass) const { return GetLinkedAnimLayerInstanceByClass(InClass);  }
+	
+	// Gets the first layer linked instance corresponding to the specified class 
+	UFUNCTION(BlueprintPure, Category = "Components|SkeletalMesh|Animation Blueprint Linking", meta = (Keywords = "AnimBlueprint", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API UAnimInstance* GetLinkedAnimLayerInstanceByClass(TSubclassOf<UAnimInstance> InClass) const;
+	
+	// Calls a function on each of the anim instances that this mesh component hosts, including linked and post-process instances 
+	ENGINE_API void ForEachAnimInstance(TFunctionRef<void(UAnimInstance*)> InFunction);
+	
+	/** 
+	 * Returns whether there are any valid instances to run, currently this means whether we have
+	 * have an animation instance or a post process instance available to process.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Components|SkeletalMesh", meta = (Keywords = "AnimBlueprint"))
+	ENGINE_API bool HasValidAnimationInstance() const;
+	
+	/**
+	 * Informs any active anim instances (main instance, linked instances, post instance) that a dynamics reset is required
+	 * for example if a teleport occurs.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh", meta = (Keywords = "Dynamics,Physics", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void ResetAnimInstanceDynamics(ETeleportType InTeleportType = ETeleportType::ResetPhysics);
+	
+	/** Below are the interface to control animation when animation mode, not blueprint mode */
+	
+	/**
+	* Set the Animation Mode
+	* @param InAnimationMode : Requested AnimationMode
+	* @param bForceInitAnimScriptInstance : Init AnimScriptInstance if the AnimationMode is AnimationBlueprint even if the new animation mode is the same as current (this allows to use BP construction script to do this)
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation"))
+	ENGINE_API void SetAnimationMode(EAnimationMode::Type InAnimationMode, bool bForceInitAnimScriptInstance = true);
+	
+	UFUNCTION(BlueprintPure, Category = "Components|Animation", meta = (Keywords = "Animation"))
+	ENGINE_API EAnimationMode::Type GetAnimationMode() const;
+	
+	/* Animation play functions
+	 *
+	 * These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	 * Because of that reason, it is not safe to be used during construction script
+	 * Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized 
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void PlayAnimation(class UAnimationAsset* NewAnimToPlay, bool bLooping);
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void SetAnimation(class UAnimationAsset* NewAnimToPlay);
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void Play(bool bLooping);
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void Stop();
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API bool IsPlaying() const;
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void SetPosition(float InPos, bool bFireNotifies = true);
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API float GetPosition() const;
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void SetPlayRate(float Rate);
+	
+	/* Animation play functions
+	*
+	* These changes status of animation instance, which is transient data, which means it won't serialize with this component
+	* Because of that reason, it is not safe to be used during construction script
+	* Please use OverrideAnimationData for construction script. That will override AnimationData to be serialized
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation", UnsafeDuringActorConstruction = "true"))
+	ENGINE_API float GetPlayRate() const;
+
+	/**
+	* This ovrrides the current AnimationData parameter in the SkeletalMeshComponnt. This will serialize whn th component serialize
+	* so it can be used during construction script. However, note that this will override current existing data
+	* This can be useful if you'd like to mak a blueprint with custom default animation per component
+	* This sets single player mode, which means you cannot use AnimBlueprint with it
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Components|Animation", meta = (Keywords = "Animation"))
+	ENGINE_API void OverrideAnimationData(UAnimationAsset* InAnimToPlay, bool bIsLooping = true, bool bIsPlaying = true, float Position = 0.f, float PlayRate = 1.f);
+
+	/**
+	* Set Morph Target with Name and Value(0-1)
+	*
+	* @param bRemoveZeroWeight : Used by editor code when it should stay in the active list with zero weight
+	**/
+	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh", meta=(UnsafeDuringActorConstruction="true"))
+	ENGINE_API void SetMorphTarget(FName MorphTargetName, float Value, bool bRemoveZeroWeight=true);
+
+	/**
+	* Clear all Morph Target that are st to this mesh
+	**/ 
+	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh")
+	ENGINE_API void ClearMorphTargets();
+
+	/** 
+	* Get Morph target w/ the given name
+	**/
+	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh")
+	ENGINE_API float GetMorphTarget(FName MorphTargetName) const;
+
+	/** 
+	* Takes a snapshot of this skeletal mesh component's pose and saves it to the specifiede snapshot
+	* The snapshot is taken at the current LOD, so if for example, you ook th snapshot at LOD1
+	* and then used it at LOD0 any bones not in LOD1 will use the reference pose
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	ENGINE_API void SnapshotPose(UPARAM(ref) FPoseSnapshot& Snapshot);
+
+	/** 
+	* Sets whether cloth assets should be create/simulated in this component
+	* This will update the conditional flag and you will want to call RecrateClothingActors for it to take effect. 
+	* @param bInAllow Whether to allow the creation of cloth assests and simultion. 
+	**/ 
+	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh")
+	ENGINE_API void SetAllowClothActors(bool bInAllow);
+
+	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh")
+	bool GetAllowClothActors() const { return bAllowClothActors; }
+
+	/**
+	* Get/Set the max distance scale of clothing mesh vertices
+	**/
+	UFUNCTION(BlueprintCallable, Category="Clothing")
+	ENGINE_API float GetClothMaxDistanceScale() const;
+	UFUNCTION(BlueprintCallable, Category="Clothing")
+	ENGINE_API void SetClothMaxDistanceScale(float Scale);
+
+	/** 
+	* Used to indicate w should force 'teleport' during the next call to UpdateClothState, 
+	* This will transform positions and vlocities and thus keep the simulation state, just translate it to a new pose
+	**/
+	UFUNCTION(BlueprintCallable, Category="Clothing")
+	ENGINE_API void ForceClothNextUpdateTeleport();
+	/**
+	* Used to indicate we should force 'teleport adn reset' during the next call to UpdateClothState. 
+	* This can be used to reset it form a bad state or by a teleport where the old state is not important anymore.
+	**/
+	UFUNCTION(BlueprintCallable, Category="Clothing")
+	ENGINE_API void ForceClothNextUpdateTeleportAndReset();
+
+	//Stops simulating clothing, but does not show clothing ref pose. Keeps the last known simulation state
+	UFUNCTION(BlueprintCallable, Category="Clothing", meta=(UnsafeDuringActorConstruction))
+	ENGINE_API void SuspendClothingSimulation();
+
+	//Resumes a previously suspended clothing simulation, teleporting the clothing on the next tick
+	UFUNCTION(BlueprintCallable, Category = "Clothing", meta=(UnsafeDuringActorConstruction))
+	ENGINE_API void ResumeClothingSimulation();
+
+	//Gets whether or not the clothing simulation is currently suspended
+	UFUNCTION(BlueprintCallable, Category = "Clothing")
+	ENGINE_API bool IsClothingSimulationSuspended() const;
+
+	/** 
+	* Reset the teleport mode of a next update to 'Continuous'
+	**/
+	UFUNCTION(BlueprintCallable, Category="Clothing")
+	ENGINE_API void ResetClothTeleportMode();
+
+	/**
+	* If this component has a valid LeaderPoseComponent then this function makes cloth items on the follower component
+	* take the transforms of the cloth items on the leader component instad of simulation separately. 
+	* @Note This will FORCE any cloth actor on the leader component to simulate in local space. Also 
+	* The meshes used in the components must be identical for the cloth to bind correctly
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Clothing", meta = (UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void BindClothToLeaderPoseComponent();
+
+	UE_DEPRECATED(5.1, "This method has been deprecated. Please use BindClothToLeaderPoseComponent instead.")
+	void BindClothToMasterPoseComponent() { BindClothToLeaderPoseComponent(); }
+
+	/**
+	* If this component has a valid LeaderPoseComponent and has its cloth bound to the 
+	* MCP, this function will unbind the cloth adn resume simulation. 
+	* @param bRetoreSimulationSpace if true and the leader pose cloth was originally simulating in world
+	* space, we will restore this setting. This will cause the leader component to reset which may be
+	* undesirable
+	**/ 
+	UFUNCTION(BlueprintCallable, Category="Clothing", meta=(UnsafeDuringActorConstruction="true"))
+	ENGINE_API void UnbindClothFromLeaderPoseComponent(bool bRestoreSimulationSpace = true);
+
+	UE_DEPRECATED(5.1, "This method has been deprecated. Please use UnbindClothFromLeaderPoseComponent instead.")
+	void UnbindClothFromMasterPoseComponent(bool bRestoreSimulationSpace = true) { UnbindClothFromLeaderPoseComponent(bRestoreSimulationSpace); }
+
+	/** 
+	* Sets whether or not to allow rigidy body animation node for this component
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	ENGINE_API void SetAllowRigidBodyAnimNode(bool bInAllow, bool bReinitAnim = true);
+
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	bool GetAllowRigidBodyAnimNode() const { return !bDisableRigidBodyAnimNode; }
+
+	/**
+	* Sets whether or no to force ick component in order to update animation and refresh transform for this component
+	* This is supporteed only in the editor
+	**/
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh", meta = (DevelopmentOnly, UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void SetUpdateAnimationInEditor(const bool NewUpdateState);
+
+	/**
+	* Sets whether or not to animation cloth in the editor. Requires Animation In Editor to alos be true. 
+	* This is supported only in the editor
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh", meta = (DevelopmentOnly, UnsafeDuringActorConstruction = "true"))
+	ENGINE_API void SetUpdateClothInEditor(const bool NewUpdateState);
+
+	#if WITH_EDITOR
+		/**
+		* return true if currently updating in editor is true
+		* this is non BP because this is only used for follower componenet to detech elader component ticking state
+		**/
+		bool GetUpadteAnimationInEditor() const
+		{
+			return bUpdateAnimationInEditor;
+		}
+
+		bool GetUpdateClothEditor() const
+		{
+			return bUpdateClothInEditor; 
+		}
+	#endif
+
+	UE_DEPRECATED(4.18, "This function is deprecated. Please use SetAllowAnimCurveEvaluation instead. Note that the meaning is reversed.")
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	ENGINE_API void SetDisableAnimCurves(bool bInDisableAnimCurves);
+	
+	UE_DEPRECATED(4.18, "This function is deprecated. Please use GetAllowedAnimCurveEvaluate instead. Note that the meaning is reversed.")
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	bool GetDisableAnimCurves() const { return !bAllowAnimCurveEvaluation; }
+	
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	ENGINE_API void SetAllowAnimCurveEvaluation(bool bInAllow);
+	
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	bool GetAllowedAnimCurveEvaluate() const { return bAllowAnimCurveEvaluation; }
+	
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	ENGINE_API void AllowAnimCurveEvaluation(FName NameOfCurve, bool bAllow);
+
+	//By reset, it will allow all the curves to be evaluated
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	ENGINE_API void ResetAllowedAnimCurveEvaluation();
+
+	//Resets, and then only allow the following list to be allowed/disallowed
+	UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+	ENGINE_API void SetAllowedAnimCurvesEvaluation(const TArray<FName>& List, bool bAllow);
+
+	UE_DEPRECATED(5.3, "Please use GetCurveFilterSettings")
+	const TArray<FName>& GetDisallowedAnimCurvesEvaluation() const { return FilteredAnimCurves; }
+
+	/** 
+	* Get the curve settings that will be used for anim evaluation. 
+	* @param InLODOverride	Override the LOD that curves will be calculated for, if not INDEX_NONE
+	* @return the curve settings used for evaluation 
+	**/ 
+	ENGINE_API UE::Anim::FCurveFilterSettings GetCurveFilterSettings(int32 InLODOverride = INDEX_NONE) const;
+
+	/** We detach the Component once we are done playing it. 
+	* 
+	* @param ParticleSystemComponent that finished
+	**/ 
+	ENGINE_API virtual void SkelMeshCompOnParticleSystemFinished( class UParticleSystemComponent* PSC);
+
+	ENGINE_API class UAnimSingleNodeInstance * GetSingleNodeInstance() const;
+	ENGINE_API bool InitializeAnimScriptInstance(bool bForceReinit = true, bool bInDeferRootNodeInitialization = false);
+
+	// @return true if wind is enabled
+	ENGINE_API virtual bool IsWindEnabled() const;
+
+	#if WITH_EDITOR
+		/** 
+		* Subclass such as DebugSkelMeshComponent keep track of errors in the anim notifies so they can be displayed to the user. This function adds an error. 
+		* Errors are added uniquely and only removed when they're cleard by ClearAnimNotifyError.
+		**/ 
+		virtual void ReportAnimNotifyError(const FText& Error, UObject* InSourceNotify){}
+
+		/**
+		* Clears currently stored errors. Call before triggering anim notifies for a particular mesh.
+		*/
+		virtual void ClearAnimNotifyErrors(UObject* InSourceNotify){}
+	#endif
