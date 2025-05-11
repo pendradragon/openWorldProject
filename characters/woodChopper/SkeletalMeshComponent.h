@@ -1611,3 +1611,117 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	* This will override AnimInstance MorphTargetCurves if same curve is found
 	**/
 	TMap<FName, float> MorphTargetCurves;
+
+    public: 
+	const TMap<FName, float>& GetMorphTargetCurves() const { return MorphTargetCurves;  }
+	//
+	//Animation
+	//
+	ENGINE_API virtual void InitAnim(bool bForceReinit);
+
+	//Broadcast when the components aim instance is initialized
+	UPROPERTY(BlueprintAssignable, Category = Animation)
+	FOnAnimInitialized OnAnimInitialized;
+
+	/**
+		If VisibilityBasedAnimTick Option == EVisibilityBasedAnimTickOption::OnlyTickMontagesWhenNotRendered
+		Should we tick Montages only?
+	**/ 
+	ENGINE_API bool ShouldOnlyTickMontages(const float DeltaTime) const;
+
+	ENGINE_API bool ShouldOnlyTickMontagesAndRefreshBones(const float DeltaTime) const;
+
+	// @return whether we should tick animation (we may want to skip it due to URO)
+	ENGINE_API bool ShouldTickAnimation() const;
+
+	//Tick Animation system
+	ENGINE_API void TickAnimation(float DeltaTime, bool bNeedsValidRootMotion);
+
+	//Tick all of our anim instances (linked instances, main instance and post process)
+	ENGINE_API void TickAnimInstances(float DeltaTime, bool bNeedsValidRootMotion);
+
+	//Tick Clothing Animation, basically this is called inside TickComponent
+	ENGINE_API void TickClothing(float DeltaTime, FTickFunction& ThisTickFunction);
+
+	//Store clothing simulation data into OUtClothSimData
+	UE_DEPRECATED(5.2, "Use GetUpdateClothSimulationData_AnyThread instead.")
+	ENGINE_API void GetUpdateClothSimulationData(TMap<int32, FClothSimulData>& OutClothSimData, USkeletalMeshComponent* OverrideLocalRootComponent = nullptr);
+
+	//Store cloth simulation data into OutClothSimulData. Override USkinnedMeshComponent
+	ENGINE_API virtual void GetUpdateClothSimulationData_AnyThread(TMap<int32, FClothSimulData>& OutClothSimulData, FMatrix& OutLocalToWorld, float& OutClothBlendWeight) override;
+
+	// Remove clothing actors from their simulation 
+	ENGINE_API void RemoveAllClothingActors();
+
+	// Remove all clothing actors from their simulation and clear any other necessayr colthing data to leave the simulation in a clean state
+	ENGINE_API void ReleaseAllClothingResources();
+
+	/**
+	* Draw th current clothing state, using the editor extender interface
+	* @param PDI -- The draw inerface to use
+	**/ 
+	ENGINE_API void DebugDrawClothing(FPrimitiveDrawInterface* PDI);
+
+	/**
+	* Draw the currently clothing state, using the editor extender interface
+	* @param Canvas -- the canvas used to draw the text on
+	* @para ScenceView -- the viwe to project the next with
+	**/ 
+	ENGINE_API void DebugDrawClothingTexts(FCanvas* Canvas, const FSceneView* SceneView);
+
+	#if WITH_EDITOR
+		ENGINE_API void UpdatePoseWatches();
+		TArray<FAnimNodePoseWatch> PoseWatches;
+	#endif 
+
+	/** Changes the value of bNotifyRigidBodyCollison 
+	* @param bNewNotifyRigidBodyCollision -- The value to assign to bNotifyRigidBodyCollision
+	**/
+	ENGINE_API virtual void SetNotifyRigidBodyCollision(bool bNewNotifyRigidBodyCollision) override;
+
+	/** Changs the valu of bNotifyRigidBodyCollision for a given body
+	* @param bNewNotifyRigidBodyCollison -- The valu=e to assign to bNotifyRigidBodyCollision 
+	* @param BoneName -- Nam of the body to turn hit notifies on/off. None implies root body
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API virtual void SetBodyNotifyRigidBodyCollision(bool bNewNotifyRigidBodyCollision, FName BoneName = NAME_None);
+
+	/** Changgs the value of bNotifyRigidBodyCollision on all bodies below a given bone name. 
+	* @param bNewNotifyRigidBodyCollision -- The value to assign to bNotifyRigidBodyCollision 
+	* @param BoneName -- Name of the body to turn nit notifies on (and below)
+	* @param bIncludesSelf -- Whether to modify the given body (useful for roots with multiple children) 
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API virtual void SetNotifyRigidBodyCollisionBelow(bool bNewNotifyRigidBodyCollision, FName BoneName = NAME_None, bool bIncludeSelf = true);
+
+	/** 
+ 	* Recalulates the RequiredBones array in this SkeletalMeshComponent based on the current SkeleetalMesh, LOD and PhysicsAsset
+	* Is called when bRequiredBonesUpToDate = false
+	* 
+	* @param LODIndex -- Index of LOD [(0-(MaxLOD-1)]
+	**/
+	ENGINE_API void RecalcRequiredBones(int32 LODIndex);
+
+	/** Computes the requird bones in this SkeletalMeshComponent basd on the current Skeletalmsh, LOD and PhysicsAsset
+	* @param LODIndex -- Index of LOD [0-(MaxLOD-1)]
+	**/
+	ENGINE_API void ComputeRequiredBones(TArray<FBoneIndexType>& OutRequiredBones, TArray<FBoneIndexType>& OutFillComponentSpaceTransformsRequiredBones, int32 LODIndex, bool bIgnorePhysicsAsset) const;
+
+	//Get th requireed virtual bones from the SkeletalMesh Reference Skeleton 
+	static ENGINE_API void GetRequiredVirtualBones(const USkeletalMesh* SkeletalMesh, TArray<FBoneIndexType>& OutRequiredBones);
+
+	// Removes th bones explicitly hidden or hidden by parent
+	static ENGINE_API void ExcludeHiddenBones(const USkeletalMeshComponent* SkeletalMeshComponent, const USkeletalMesh* SkeletalMesh, TArray<FBoneIndexType>& OutRequiredBones);
+
+	//Get the bones used for mirroring in the skeletal mesh asset (if any)
+	UE_DEPRECATED(5.3, "This method has been deprecated. Please use UMirrorDataTable for mirroring support.")
+	static ENGINE_API void GetMirroringRequiredBones(const USkeletalMesh* SkeletalMesh, TArray<FBoneIndexType>& OutRequiredBones);
+
+	//Get the bones required for shadow shapes 
+	static ENGINE_API void GetShadowShapeRequiredBones(const USkeletalMeshComponent* SkeletalMeshComponent, TArray<FBoneIndexType>& OutRequiredBones);
+
+	/**
+	* Recalculats th AnimCurveUids array in RquiredBone of this SkeletalMeshComponent based on current rquired bone set(s)
+	* Is called when Skeleton->IsRequiredCurvesUpToDate() = false
+	**/ 
+	ENGINE_API void RecalcRequiredCurves();
