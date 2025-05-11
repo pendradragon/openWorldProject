@@ -1597,3 +1597,17 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	* to accessing it. 
 	**/
 	TMap<int32, FClothSimulData> CurrentSimulationData;
+
+    private:
+
+	//Wrapper that calls our constraint broken delegate
+	ENGINE_API void OnConstraintBrokenWrapper(int32 ConstraintIndex);
+
+	//Wrapper htat calls our constraint plasiticity delegate
+	ENGINE_API void OnPlasticDeformationWrapper(int32 ConstraintIndex);
+
+	/**
+	* Morph Target Curves. 
+	* This will override AnimInstance MorphTargetCurves if same curve is found
+	**/
+	TMap<FName, float> MorphTargetCurves;
