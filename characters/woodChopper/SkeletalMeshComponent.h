@@ -1725,3 +1725,30 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	* Is called when Skeleton->IsRequiredCurvesUpToDate() = false
 	**/ 
 	ENGINE_API void RecalcRequiredCurves();
+
+    public: 
+	///Begin UObject Interface
+	ENGINE_API virtual void Serialize(FArchive& Ar) override;
+	ENGINE_API virtual void PostLoad() override;
+	ENGINE_API virtual void PostInitProperties() override;
+	#if WITH_EDITOR
+		DECLARE_MULTICAST_DELEGATE(FOnSkeletalMeshPropertyChangedMulticaster)
+		FOnSkeletalMeshPropertyChangedMulticaster OnSkeletalMeshPropertyChanged;
+		typedef FOnSkeletalMeshPropertyChangedMulticaster::FDelegate FOnSkeletalMeshPropertyChanged;
+		
+		// Register/unregister delegates called when the skeletonal mesh property is changed
+		ENGINE_API FDelegateHandle RegisterOnSkeletalMeshPropertyChanged(const FOnSkeletalMeshPropertyChanged& Delegate);
+		ENGINE_API void UnregisterOnSkeletalMeshPropertyChanged(FDelegateHandle Handle);
+
+		ENGINE_API virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+		//Validates the animation asset blueprint,  aming sure it is compatible with the current skeleton
+		ENGINE_API void ValidateAnimation();
+
+		ENGINE_API virtual void LoadedFromAnotherClass(const FName& OldClassName) override;
+		ENGINE_API virtual void UpdateCollisionProfile() override;
+	#endif //WITH_EDITOR
+	ENGINE_API virtual void GetResourceSizeEx(FResourceSizeEx& CumulativeResourceSize) override;
+	//End UObject Interface
+
+	//Begin UActorComponent Interface
