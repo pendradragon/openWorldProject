@@ -1760,3 +1760,33 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	ENGINE_API virtual void OnDestroyPhysicsState() override;
 	ENGINE_API virtual void SendRenderDynamicData_Concurrent() override;
 	ENGINE_API virtual void RegisterComponentTickFunctions(bool bRegister) override;
+    public:
+	ENGINE_API virtual void InitializeComponent() override;
+	ENGINE_API virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+	ENGINE_API virtual void BeginPlay() override;
+	ENGINE_API virtual void SetComponentTickEnabled(bool bEnabled) override;
+	ENGINE_API virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+	
+	#if WITH_EDITOR
+		ENGINE_API virtual TStructOnScope<FActorComponentInstanceData> GetComponentInstanceData() const override;
+	#endif //WITH_EDITOR
+
+	//Handle registering our end physics tick function 
+	ENGINE_API virtual void RegisterEndPhysicsTick(bool bRegister);
+
+	ENGINE_API virtual bool RequiresPreEndOfFrameSync() const override;
+	ENGINE_API virtual void OnPreEndOfFrameSync() override;
+
+	//Handle registering our pre-cloth tick funciton 
+	ENGINE_API void RegisterClothTick(bool bRegister);
+
+	//~ End UActorComponent Interface
+
+	//~ Begin USceneComponent Interface
+	ENGINE_API virtual FBoxSphereBounds CalcBounds(const FTransform& LocalToWorld) const override;
+	ENGINE_API virtual bool IsAnySimulatingPhysics() const override;
+	ENGINE_API virtual void OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport = ETeleportType::None) override;
+	ENGINE_API virtual bool UpdateOverlapsImpl(const TOverlapArrayView* PendingOverlaps=NULL, bool bDoNotifies=true, const TOverlapArrayView* OverlapsAtEndLocation=NULL) override;
+	//~ End USceneComponent Interface
+
+	//~ Begin UPrimitiveComponent Interface
