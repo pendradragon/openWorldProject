@@ -1752,3 +1752,11 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	//End UObject Interface
 
 	//Begin UActorComponent Interface
+    protected:
+	ENGINE_API virtual void OnRegister() override;
+	ENGINE_API virtual void OnUnregister() override;
+	ENGINE_API virtual bool ShouldCreatePhysicsState() const override;
+	ENGINE_API virtual void OnCreatePhysicsState() override;
+	ENGINE_API virtual void OnDestroyPhysicsState() override;
+	ENGINE_API virtual void SendRenderDynamicData_Concurrent() override;
+	ENGINE_API virtual void RegisterComponentTickFunctions(bool bRegister) override;
