@@ -1790,3 +1790,19 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	//~ End USceneComponent Interface
 
 	//~ Begin UPrimitiveComponent Interface
+    protected:
+	/**
+	* Test the collision of the supplied component at the supplied location/rotation, and determine the set of components that it overlaps
+	* @param OutOverlaps: Array of overlaps found between this component in specified pose and the world
+	* @param World: World to use for overlap test
+	* @param Pos: Location of the component's geometry for the test against the world
+	* @param Rot: Rotation of the component's geometry for the test against the world. 
+	* @param TestChannel: The 'channel' that is this ray is in, used to determin which components to hit
+	* @param ObjectQueryParams: List of object types it is looking for. When this enters, we do object query with the component shape
+	* @return TRUE if OutOverlaps contains any blocking results
+	**/
+	ENGINE_API virtual bool ComponentOverlapMultiImpl(TArray<struct FOverlapResult>& OutOverlaps, const class UWorld* InWorld, const FVector& Pos, const FQuat& Rot, ECollisionChannel TestChannel, const struct FComponentQueryParams& Params, const struct FCollisionObjectQueryParams& ObjectQueryParams = FCollisionObjectQueryParams::DefaultObjectQueryParam) const override;
+	
+	ENGINE_API virtual bool ComponentOverlapComponentImpl(class UPrimitiveComponent* PrimComp, const FVector Pos, const FQuat& Quat, const FCollisionQueryParams& Params) override;
+
+	ENGINE_API virtual bool MoveComponentImpl(const FVector& Delta, const FQuat& NewRotation, bool bSweep, FHitResult* OutHit = NULL, EMoveComponentFlags MoveFlags = MOVECOMP_NoFlags, ETeleportType Teleport = ETeleportType::None) override;
