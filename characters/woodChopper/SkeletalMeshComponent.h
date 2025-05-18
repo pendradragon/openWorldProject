@@ -1806,3 +1806,146 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	ENGINE_API virtual bool ComponentOverlapComponentImpl(class UPrimitiveComponent* PrimComp, const FVector Pos, const FQuat& Quat, const FCollisionQueryParams& Params) override;
 
 	ENGINE_API virtual bool MoveComponentImpl(const FVector& Delta, const FQuat& NewRotation, bool bSweep, FHitResult* OutHit = NULL, EMoveComponentFlags MoveFlags = MOVECOMP_NoFlags, ETeleportType Teleport = ETeleportType::None) override;
+
+    public: 
+
+	ENGINE_API virtual class UBodySetup* GetBodySetup() override;
+	ENGINE_API virtual bool CanEditSimulatePhysics() override;
+	ENGINE_API virtual bool IsSimulatingPhysics(FName BoneName = NAME_None) const override;
+	ENGINE_API virtual FBodyInstance* GetBodyInstance(FName BoneName = NAME_None, bool bGetWelded = true, int32 Index = INDEX_NONE) const override;
+	ENGINE_API virtual void UpdatePhysicsToRBChannels() override;
+	ENGINE_API virtual void SetAllPhysicsAngularVelocityInRadians(FVector const& NewVel, bool bAddToCurrent = false) override;
+	ENGINE_API virtual void SetAllPhysicsPosition(FVector NewPos) override;
+	ENGINE_API virtual void SetAllPhysicsRotation(FRotator NewRot) override;
+	ENGINE_API virtual void SetAllPhysicsRotation(const FQuat& NewRot) override;
+	ENGINE_API virtual void WakeAllRigidBodies() override;
+	ENGINE_API virtual void PutAllRigidBodiesToSleep() override;
+	ENGINE_API virtual bool IsAnyRigidBodyAwake() override;
+	ENGINE_API virtual void SetEnableGravity(bool bGravityEnabled);
+	ENGINE_API virtual bool IsGravityEnabled() const override;
+	ENGINE_API virtual void OnComponentCollisionSettingsChanged(bool bUpdateOverlaps=true) override;
+	ENGINE_API virtual void SetPhysMaterialOverride(UPhysicalMaterial* NewPhysMaterial) override;
+	ENGINE_API virtual bool GetSquaredDistanceToCollision(const FVector& Point, float& OutSquaredDistance, FVector& OutClosestPointOnCollision) const override;
+
+	/**
+	* Enables or disables gravity for the given bone. 
+	* NAME_None indicates the root body will be edited. 
+	* If the bone name is given is otherwise invalid, nothing happens
+	*
+	* @param bEnableGravityL Whether gravity should be enabled or disabled. 
+	* @param BoneName: The nam of the bone to modify
+	**/
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetEnableBodyGravity(bool bEnableGravity, FName BoneName);
+
+	/**
+	* Checks whether or not gravity is enabled on the given bone. 
+	* NAME_None indicates the root body should be queried
+	* If the bone name is otherwise invalid, false is returned
+	* 
+	* @param BoneName: The name of th bone to check
+	* @return True if gravity is enabled on the bone
+	**/ 
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API bool IsBodyGravityEnabled(FName BoneName);
+
+	/**
+	* Enables or disables gravity to all bodies below the given bone
+	* NAME_None indicates all bodies will be edited. 
+	* In that case, consider using UPrimitivComponent::EnableGravity
+	*
+	* @param bEnableGravity: Whether gravity should be enabled or disabled
+	* @param BoneName: The name of the top most bone 
+	* @param bIncludeSelf: Whethr the bone specified should be editied
+	**/
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API bool IsBodyGravityEnabled(FName BoneName);
+
+	/**
+	* Given a world position, find the closest point on the physics asset. Note that this is independent of collision and welding. This is based purely on animaiton position 
+	* @param WorldPosition: The point we want the closest point to (ie for all bodies int h physics asset, find the one that has a point closest to WorldPosition). 
+	* @param ClosestPointOnPhysicsAsset: The data associated with the closest point (position, normal, etc...)
+	* @param bApproximate: The closest body is found using bone transform distance instead of body distance. This approximation means the final point is the closest point on a potentially not closest body. This approximation gets worse as the size of Bodies gets bigger. 
+	* @return true if we found a closest point
+	**/ 
+	ENGINE_API bool GetClosestPointOnPhysicsAsset(const FVector& WorldPosition, FClosestPointOnPhysicsAsset& ClosestPointOnPhysicsAsset, bool bApproximate) const;
+
+	/**
+	* Given a world position, find the closest point on the physics asset. Note that this is independent of collision and welding. This is based purely on animation position 
+	* @param WorldPosition: The point we want the closest point to (ie for all the bodies in th physics asset, find the one that has a point cloeset to WorldPosition)
+	* @param ClosestPointOnPhysicsAsset: The data associated with the closest point (position, normal, etc...)
+	* @return true if w found a closest point
+	**/
+	UFUNCTION(BlueprintCallable, Category="Components|SkeletalMesh", meta=(DisplayName="Get Closest Point On Physics Asset", ScriptName="GetClosestPointOnPhysicsAsset", Keywords="closest point"))
+	ENGINE_API bool K2_GetClosestPointOnPhysicsAsset(const FVector& WorldPosition, FVector& ClosestWorldPosition, FVector& Normal, FName& BoneName, float& Distance) const;
+
+	ENGINE_API virtual bool LineTraceComponent( FHitResult& OutHit, const FVector Start, const FVector End, const FCollisionQueryParams& Params ) override;
+
+	/**
+	* Trace a shape against this component. Will trace againt each body, returning as soon as any collision is found. Note that this collision may not be the closest
+	* @param OutHit: Information about hit against this component, if true is returned
+	* @param Start: Start location of the trace 
+	* @param End: End location of the trace
+	* @param ShapeWorldRotation: The rotation applied to the collision shape in world space.
+	* @param CollisionShape: Collsion Shape
+	* @param bTraceConplex: Whethr or not to trace complex
+	* @return true if a hit is found
+	**/ 
+	 ENGINE_API virtual bool SweepComponent( FHitResult& OutHit, const FVector Start, const FVector End, const FQuat& ShapRotation, const FCollisionShape& CollisionShape, bool bTraceComplex=false) override;
+	
+	ENGINE_API virtual bool OverlapComponent(const FVector& Pos, const FQuat& Rot, const FCollisionShape& CollisionShape) const override;
+	ENGINE_API virtual void SetSimulatePhysics(bool bEnabled) override;
+	ENGINE_API virtual void AddRadialImpulse(FVector Origin, float Radius, float Strength, ERadialImpulseFalloff Falloff, bool bVelChange=false) override;
+	ENGINE_API virtual void AddRadialForce(FVector Origin, float Radius, float Strength, ERadialImpulseFalloff Falloff, bool bAccelChange=false) override;
+	ENGINE_API virtual void SetAllPhysicsLinearVelocity(FVector NewVel,bool bAddToCurrent = false) override;
+	ENGINE_API virtual void SetAllMassScale(float InMassScale = 1.f) override;
+	ENGINE_API virtual float GetMass() const override;
+	ENGINE_API virtual void SetAllUseCCD(bool InUseCCD) override;
+
+	/**
+	* Returns th mass (in kg) of the given bone
+	*
+	* @param BoneName: Nam of th body to return. 'None' indicates root body. 
+	* @param bScaleMass: If true, the mass is scaled by the bone's MassScale
+	**/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API float GetBoneMass(FName BoneName = NAME_None, bool bScaleMass = true) const;
+
+	/**
+	* Returns th center of mass of the skeletal mesh, instead of the root body's location 
+	**/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API FVector GetSkeletalCenterOfMass() const;
+
+
+	ENGINE_API virtual float CalculateMass(FName BoneName = NAME_None) override;
+	ENGINE_API virtual bool DoCustomNavigableGeometryExport(FNavigableGeometryExport& GeomExport) const override;
+
+	/** 
+	* Add a force to all rigid bodies below. 
+	* This is like a 'thruster'. Good for adding a burst over some (non zero) time. Should be called every fram for the duration of the force
+	*
+	* @param Force: Force vector to apply. Magnitude indicates strength of force. 
+	* @param BoneName: If a SkeletalMeshComponent, name of body to apply force to. 'None' indicates root body. 
+	* @param bAccelChange: If true, Force is taken as a change in acceleration instead of physical force.
+	* @param bIncludeSelf: If false, Force is only applied to bodies below but not given bone name. 
+	**/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API virtual void AddForceToAllBodiesBelow(FVector Force, FName BoneName = NAME_None, bool bAccelChange = false, bool bIncludeSelf = true);
+
+	/**
+	* Add impluse to all single rigid bodies below. Good for one time instant burst
+	*
+	* @param Impulse: Magnitude and direction of impluse to apply
+	* @param BoneName: If a SkeletalMeshComponent, name of body to apply to. 'None' indicates root body. 
+	* @param bVelChange If true, the Strength is taken as a change in velocity instead of an impluse
+	* @param bIncludeSelf: If fals, Force is only applied to bodies below but not given bone name. 
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API virtual void AddImpulseToAllBodiesBelow(FVector Impulse, FName BoneName = NAME_None, bool bVelChange = false, bool bIncludeSelf = true);
+
+	ENGINE_API virtual bool IsShown(const FEngineShowFlags& ShowFlags) const override;
+	#if WITH_EDITOR
+		ENGINE_API virtual bool ComponentIsTouchingSelectionBox(const FBox& InSelBBox, const bool bConsiderOnlyBSP, const bool bMustEncompassEntireComponent) const override;
+		ENGINE_API virtual bool ComponentIsTouchingSelectionFrustum(const FConvexVolume& InFrustum, const bool bConsiderOnlyBSP, const bool bMustEncompassEntireComponent) const override;
+	#endif
