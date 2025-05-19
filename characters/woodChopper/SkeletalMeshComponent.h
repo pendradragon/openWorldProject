@@ -2006,3 +2006,390 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	ENGINE_API virtual void SetRefPoseOverride(const TArray<FTransform>& NewRefPoseTransforms) override;
 	ENGINE_API virtual void ClearRefPoseOverride() override;
 	//~ End USkinnedMeshComponent Interface
+
+	//Conditions usd to gate when post procss events happen 
+	ENGINE_API bool ShouldEvaluatePostProcessAnimBP() const;
+	ENGINE_API bool ShouldUpdatePostProcessInstance() const;
+	ENGINE_API bool ShouldPostUpdatePostProcessInstance() const;
+	ENGINE_API bool ShouldEvaluatePostProcessInstance() const;
+
+	/**
+	* Iterate over each joint in the physics for this mesh, setting its AngularPositionTarget based on the animaiton informaiton 
+	**/ 
+	ENGINE_API void UpdateRBJointMotors();
+
+	/**
+	* Runs the animation evaluation for the currnt pose into supplied variables
+	* PerformAnimationProcessing runs evaluation based on bInDoEvaluation. PerformAnimationEvaluation
+	* always runs evaluation (and exists for backwards compatiability)
+	*
+	* @param InSkeletalMesh: The skeletal mesh we are animating
+	* @param InAnimInstance: The anim instance we are evaluating
+	* @param bInDoEvaluation: Whether to perform evaluation (we may just want to update)
+	* @param OutSpaceBases: Component space bone transforms
+	* @param OutBoneSpaceTransforms: Local space bone transforms
+	* @param OutRootBoneTranslation: Calculated root bone translation
+	* @param OutCurves: Blended Curve
+	**/
+	#if WITH_EDITOR
+		ENGINE_API void PerformAnimationEvaluation(const USkeletalMesh* InSkeletalMesh, UAnimInstance* InAnimInstance, TArray<FTransform>& OutSpaceBases, TArray<FTransform>& OutBoneSpaceTransforms, FVector& OutRootBoneTranslation, FBlendedHeapCurve& OutCurve, UE::Anim::FMeshAttributeContainer& OutAttributes);
+	
+		UE_DEPRECATED(4.26, "Please use PerformAnimationEvaluation with different signature")
+		ENGINE_API void PerformAnimationEvaluation(const USkeletalMesh* InSkeletalMesh, UAnimInstance* InAnimInstance, TArray<FTransform>& OutSpaceBases, TArray<FTransform>& OutBoneSpaceTransforms, FVector& OutRootBoneTranslation, FBlendedHeapCurve& OutCurve);
+	#endif
+
+	ENGINE_API void PerformAnimationProcessing(const USkeletalMesh* InSkeletalMesh, UAnimInstance* InAnimInstance, bool bInDoEvaluation, bool bInForceRefPose, TArray<FTransform>& OutSpaceBases, TArray<FTransform>& OutBoneSpaceTransforms, FVector& OutRootBoneTranslation, FBlendedHeapCurve& OutCurve, UE::Anim::FMeshAttributeContainer& OutAttributes);
+
+	UE_DEPRECATED(5.5, "Please use PerformAnimationEvaluation with different signature")
+	ENGINE_API void PerformAnimationProcessing(const USkeletalMesh* InSkeletalMesh, UAnimInstance* InAnimInstance, bool bInDoEvaluation, TArray<FTransform>& OutSpaceBases, TArray<FTransform>& OutBoneSpaceTransforms, FVector& OutRootBoneTranslation, FBlendedHeapCurve& OutCurve, UE::Anim::FMeshAttributeContainer& OutAttributes);
+	
+	/** 
+	* Evaluates the post procss instance from the skeletal mesh this component is using 
+	**/ 
+	ENGINE_API void EvaluatePostProcessMeshInstance(TArray<FTransform>& OutBoneSpaceTransforms, FCompactPose& InOutPose, FBlendedHeapCurve& OutCurve, const USkeletalMesh* InSkeletalMesh, FVector& OutRootBoneTranslation, UE::Anim::FHeapAttributeContainer& OutAttributes, bool bInForceRefPose) const;
+	
+	UE_DEPRECATED(5.5, "Please use EvaluatePostProcessMeshInstance with different signature")
+	ENGINE_API void EvaluatePostProcessMeshInstance(TArray<FTransform>& OutBoneSpaceTransforms, FCompactPose& InOutPose, FBlendedHeapCurve& OutCurve, const USkeletalMesh* InSkeletalMesh, FVector& OutRootBoneTranslation, UE::Anim::FHeapAttributeContainer& OutAttributes) const;
+	
+	ENGINE_API void PostAnimEvaluation(FAnimationEvaluationContext& EvaluationContext);
+
+
+	ENGINE_API void InitCollisionRelationships();
+
+
+	ENGINE_API void TermCollisionRelationships();
+
+	/** 
+	* Blend of Physics Bones with PhysicsWeight and Animated Bones with (1-PhysicsWeight)
+	*
+	* @param RequiredBones: List of bones to blend
+	**/ 
+	UE_DEPRECATED(4.26, "This function is deprecated and should not be called directly. Please use the mechanism provided in USkeletalMeshComponent::EndPhysicsTickComponent")
+	void BlendPhysicsBones( TArray<FBoneIndexType>& Bones )
+	{
+		PerformBlendPhysicsBones(Bones, AnimEvaluationContext.BoneSpaceTransforms, AnimEvaluationContext.BoneSpaceTransforms);
+	}
+
+
+	//Take th results of the phsyics and blend them with the animation state (based on the PhysicsWeight parameter), and update the SpaceBases array
+	UE_DEPRECATED(4.26, "Public access to this function is deprecated. Please use the mechanism provided in USkeletalMeshComponent::EndPhysicsTickComponent")
+	void BlendInPhysics(FTickFunction& ThisTickFunction) { BlendInPhysicsInternal(ThisTickFunction); }
+
+	/**
+	* Initalize PhysicsAssetInstance for the physicsAsset
+	* 
+	* @param PhysScene: Physics Scene
+	**/
+	ENGINE_API void InitArticulated(FPhysScene* PhysScene);
+
+	//Instantiats the bodies given a physics asset. Typically you should call InitArticulatd unless you are planning  to do something special with the bodies. The Created bodies and constraint are owned by the calling code and must be freed when necessary
+	ENGINE_API void InstantiatePhysicsAsset(const UPhysicsAsset& PhysAsset, const FVector& Scale3D, TArray<FBodyInstance*>& OutBodies, TArray<FConstraintInstance*>& OutConstraints, FPhysScene* PhysScene = nullptr, USkeletalMeshComponent* OwningComponent = nullptr, int32 UseRootBodyIndex = INDEX_NONE, const FPhysicsAggregateHandle& UseAggregate = FPhysicsAggregateHandle()) const;
+
+	//Instantiats only the bodies given a physics asset, not the constraints. The Created bodies are owned by calling code and must be freed when necessary
+	ENGINE_API void InstantiatePhysicsAssetBodies(const UPhysicsAsset& PhysAsset, TArray<FBodyInstance*>& OutBodies, FPhysScene* PhysScene = nullptr, USkeletalMeshComponent* OwningComponent = nullptr, int32 UseRootBodyIndex = INDEX_NONE, const FPhysicsAggregateHandle& UseAggregate = FPhysicsAggregateHandle()) const;
+
+	//Instantiates bodies given a physics asset like InstantiatedPhysicsAsst but instead of reading the current component state, this reads the ref-pose from the reference skeleton of the mesh. Useful if trying to create bodies to be used during any evaluation work 
+	ENGINE_API void InstantiatePhysicsAssetRefPose(const UPhysicsAsset& PhysAsset, const FVector& Scale3D, TArray<FBodyInstance*>& OutBodies, TArray<FConstraintInstance*>& OutConstraints, FPhysScene* PhysScene = nullptr, USkeletalMeshComponent* OwningComponent = nullptr, int32 UseRootBodyIndex = INDEX_NONE, const FPhysicsAggregateHandle& UseAggregate = FPhysicsAggregateHandle(), bool bCreateBodiesInRefPose = false) const;
+
+	//Turn off all physics and remove the instance
+	ENGINE_API void TermArticulated();
+
+	//Find the root body index
+	ENGINE_API int32 FindRootBodyIndex() const;
+
+	//Terminate physics on all bodies below the named bone, effectively disabiling collsion forever. If you terminate, you won't b able to re-init later
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void TermBodiesBelow(FName ParentBoneName);
+
+	//Find instance of th constraint that mathches the name supplied
+	ENGINE_API FConstraintInstance* FindConstraintInstance(FName ConName);
+
+	//Get instance of the constraint that mathces the index
+	ENGINE_API FConstraintInstance* GetConstraintInstanceByIndex(uint32 Index);
+
+	//Utility which returns total mass of all bons below the supplied one int he hierarch (including this one)
+	ENGINE_API float GetTotalMassBelowBone(FName InBoneName);
+
+	//Set the collision object type on the skeletal mesh 
+	ENGINE_API virtual void SetCollisionObjectType(ECollisionChannel Channel) override;
+
+	//Set the movement channel of all bodies
+	ENGINE_API void SetAllBodiesCollisionObjectType(ECollisionChannel NewChannel);
+
+	//Set the rigid body notification state for all bodies 
+	ENGINE_API void SetAllBodiesNotifyRigidBodyCollision(bool bNewNotifyRigidBodyCollision);
+
+	//Set the bSimulatePhysics to true for all bone bodies. Does not change the component bSimulationPhysics flag
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetAllBodiesSimulatePhysics(bool bNewSimulate);
+
+	/** This is global set up for setting physics blend weight 
+	* This does multiple things automatically. 
+	* If PhysicsBlendWeight == 1.f, it willl enable Simulation and if PhysicsBlendWeight == 0.f, it will disable simulation 
+	* Also it will respect each body's setup, so if the body is fixd, it won't simulate. Vice versa
+	* So if you'd like all bodies to change manualy, do not use this function, but SetAllBodiesPhysicsBlendWeight
+	**/ 
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetPhysicsBlendWeight(float PhysicsBlendWeight);
+
+	//Disable physics blending ofo bones
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetEnablePhysicsBlending(bool bNewBlendPhysics);
+
+	/** WARNING: CHAOS ONLY
+	* Set all of the bones below passed in bone to be disabled or not for the associated physics solver
+	* Bodies will not be colliding or be part of the physics simulation 
+	* This is different from SetAllBodiesBlowSimulatPhysics that changes bodies to Kinematic/simulated
+	**/ 
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void SetAllBodiesBelowPhysicsDisabled(const FName& InBoneName, bool bDisabled, bool bIncludeSelf = true);
+
+	/** set the linear velocity of the child bodies to match that of the given parent bone */
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void SetAllBodiesBelowLinearVelocity(const FName& InBoneName, const FVector& LinearVelocity, bool bIncludeSelf = true);
+
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API FVector GetBoneLinearVelocity(const FName& InBoneName);
+
+	/** Set all of the bones below passed in bone to be simulated */
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetAllBodiesBelowSimulatePhysics(const FName& InBoneName, bool bNewSimulate, bool bIncludeSelf = true );
+
+	/** Set a single bone to be simulated (or not) */
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetBodySimulatePhysics(const FName& InBoneName, bool bSimulate);
+
+	/** Allows you to reset bodies Simulate state based on where bUsePhysics is set to true in the BodySetup. */
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void ResetAllBodiesSimulatePhysics();
+
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetAllBodiesPhysicsBlendWeight(float PhysicsBlendWeight, bool bSkipCustomPhysicsType = false );
+
+	/** Set all of the bones below passed in bone to be simulated */
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void SetAllBodiesBelowPhysicsBlendWeight(const FName& InBoneName, float PhysicsBlendWeight, bool bSkipCustomPhysicsType = false, bool bIncludeSelf = true );
+
+	/** Accumulate AddPhysicsBlendWeight to physics blendweight for all of the bones below passed in bone to be simulated */
+	UFUNCTION(BlueprintCallable, Category="Physics")
+	ENGINE_API void AccumulateAllBodiesBelowPhysicsBlendWeight(const FName& InBoneName, float AddPhysicsBlendWeight, bool bSkipCustomPhysicsType = false );
+
+	/** Enable or Disable AngularPositionDrive. If motor is in SLERP mode it will be turned on if either EnableSwingDrive OR EnableTwistDrive are enabled. In Twist and Swing mode the twist and the swing can be controlled individually.*/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void SetAllMotorsAngularPositionDrive(bool bEnableSwingDrive, bool bEnableTwistDrive, bool bSkipCustomPhysicsType = false);
+
+	/** Enable or Disable AngularVelocityDrive. If motor is in SLERP mode it will be turned on if either EnableSwingDrive OR EnableTwistDrive are enabled. In Twist and Swing mode the twist and the swing can be controlled individually.*/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void SetAllMotorsAngularVelocityDrive(bool bEnableSwingDrive, bool bEnableTwistDrive, bool bSkipCustomPhysicsType = false);
+
+	/** Set Angular Drive motors params for all constraint instances */
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void SetAllMotorsAngularDriveParams(float InSpring, float InDamping, float InForceLimit, bool bSkipCustomPhysicsType = false);
+
+	/** Sets the constraint profile properties (limits, motors, etc...) to match the constraint profile as defined in the physics asset. If profile name is not found the joint is set to use the default constraint profile.*/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void SetConstraintProfile(FName JointName, FName ProfileName, bool bDefaultIfNotFound = false);
+
+	/** Sets the constraint profile properties (limits, motors, etc...) to match the constraint profile as defined in the physics asset for all constraints. If profile name is not found the joint is set to use the default constraint profile.*/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void SetConstraintProfileForAll(FName ProfileName, bool bDefaultIfNotFound = false);
+
+	/** 
+	* Gets the constraint profile properties that a joint drive would adopt if it were set to
+	* the given constraint profile. The defualt will be returned if an empty or invalid profile name
+	* is passed in. Returns true if successful, or false if the joint can't be found
+	**/ 
+	ENGINE_API bool GetConstraintProfilePropertiesOrDefault(FConstraintProfileProperties& OutProperties, FName JointName, FName ProfileName);
+
+	/** Enable or Disable AngularPositionDrive based on a list of bone names */
+	ENGINE_API void SetNamedMotorsAngularPositionDrive(bool bEnableSwingDrive, bool bEnableTwistDrive, const TArray<FName>& BoneNames, bool bSetOtherBodiesToComplement = false);
+	
+	/** Enable or Disable AngularVelocityDrive based on a list of bone names */
+	ENGINE_API void SetNamedMotorsAngularVelocityDrive(bool bEnableSwingDrive, bool bEnableTwistDrive, const TArray<FName>& BoneNames, bool bSetOtherBodiesToComplement = false);
+	
+	ENGINE_API void GetWeldedBodies(TArray<FBodyInstance*> & OutWeldedBodies, TArray<FName> & OutChildrenLabels, bool bIncludingAutoWeld = false) override;
+	
+	/** Iterates over all bodies below and executes Func. Returns number of bodies found */
+	ENGINE_API int32 ForEachBodyBelow(FName BoneName, bool bIncludeSelf, bool bSkipCustomType, TFunctionRef<void(FBodyInstance*)> Func);
+
+	/**
+	* Change whethr to force mesh into ref post (and use cheaper vertex shader)
+	*
+	* @param bNwForceRefPose: true if it would like to force ref pose.
+	**/ 
+	ENGINE_API void SetForceRefPose(bool bNewForceRefPose);
+	
+	/** Update bHasValidBodies flag */
+	ENGINE_API void UpdateHasValidBodies();
+
+	/** Update the bone mapping on each body instance. This is useful when changing skeletal mesh without recreating bodies */
+	ENGINE_API void UpdateBoneBodyMapping();
+	
+	/** 
+	 * Initialize SkelControls
+	 */
+	ENGINE_API void InitSkelControls();
+
+	/**
+	 * Find Constraint Index from the name
+	 * 
+	 * @param	ConstraintName	Joint Name of constraint to look for
+	 * @return	Constraint Index
+	 */
+	ENGINE_API int32	FindConstraintIndex(FName ConstraintName);
+	
+	/**
+	 * Find Constraint Name from index
+	 * 
+	 * @param	ConstraintIndex	Index of constraint to look for
+	 * @return	Constraint Joint Name
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API FName	FindConstraintBoneName(int32 ConstraintIndex);
+
+	/** 
+	 *	Iterate over each physics body in the physics for this mesh, and for each 'kinematic' (ie fixed or default if owner isn't simulating) one, update its
+	 *	transform based on the animated transform. This update is also done for simulating bodies if a teleport is being requested. 
+	 *	@param	InComponentSpaceTransforms	Array of bone transforms in component space
+	 *	@param	Teleport					Whether movement is a 'teleport' (ie infers no physics velocity, but moves simulating bodies) or not
+	 *	@param	bNeedsSkinning				Whether we may need  to send new triangle data for per-poly skeletal mesh collision
+	 *	@param	AllowDeferral				Whether we can defer actual update of bodies (if 'physics only' collision)
+	 */
+	ENGINE_API void UpdateKinematicBonesToAnim(const TArray<FTransform>& InComponentSpaceTransforms, ETeleportType Teleport, bool bNeedsSkinning, EAllowKinematicDeferral DeferralAllowed = EAllowKinematicDeferral::AllowDeferral);
+
+	/**
+	 * Look up all bodies for broken constraints.
+	 * Makes sure child bodies of a broken constraints are not fixed and using bone springs, and child joints not motorized.
+	 */
+	ENGINE_API void UpdateMeshForBrokenConstraints();
+	
+	/**
+	 * Notifier when look at control goes beyond of limit - candidate for delegate
+	 */
+	ENGINE_API virtual void NotifySkelControlBeyondLimit(class USkelControlLookAt* LookAt);
+
+	/** 
+	 * Break a constraint off a Gore mesh. 
+	 * 
+	 * @param	Impulse	vector of impulse
+	 * @param	HitLocation	location of the hit
+	 * @param	InBoneName	Name of bone to break constraint for
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Physics", meta = (Keywords = "Constraint"))
+	ENGINE_API void BreakConstraint(FVector Impulse, FVector HitLocation, FName InBoneName);
+
+	/** Gets a constraint by its name 
+	* @param ConstraintName		name of the constraint
+	* @param IncludesTerminated whether or not to return a terminated constraint
+	* */
+	UFUNCTION(BlueprintCallable, Category = "Physics", meta = (Keywords = "Components|SkeletalMesh"))
+	ENGINE_API FConstraintInstanceAccessor GetConstraintByName(FName ConstraintName, bool bIncludesTerminated);
+
+	/** Gets all the constraints
+	* @param IncludesTerminated whether or not to return terminated constraints
+	* @param OutConstraints returned list of constraints matching the parameters
+	* */
+	UFUNCTION(BlueprintCallable, Category = "Physics", meta = (Keywords = "Components|SkeletalMesh"))
+	ENGINE_API void GetConstraints(bool bIncludesTerminated, TArray<FConstraintInstanceAccessor>& OutConstraints);
+
+	/** Gets all the constraints attached to a body 
+	* @param BodyName name of the body to get the attached constraints from 
+	* @param bParentConstraints return constraints where BodyName is the child of the constraint
+	* @param bChildConstraints return constraints where BodyName is the parent of the constraint
+	* @param bParentConstraints return constraints attached to the parent of the body 
+	* @param IncludesTerminated whether or not to return terminated constraints
+	* @param OutConstraints returned list of constraints matching the parameters
+	* */
+	UFUNCTION(BlueprintCallable, Category = "Physics", meta = (Keywords = "Components|SkeletalMesh"))
+	ENGINE_API void GetConstraintsFromBody(FName BodyName, bool bParentConstraints, bool bChildConstraints, bool bIncludesTerminated, TArray<FConstraintInstanceAccessor>& OutConstraints);
+
+	/** Sets the Angular Motion Ranges for a named constraint
+	*  @param InBoneName  Name of bone to adjust constraint ranges for
+	*  @param Swing1LimitAngle	 Size of limit in degrees, 0 means locked, 180 means free
+	*  @param TwistLimitAngle	 Size of limit in degrees, 0 means locked, 180 means free
+	*  @param Swing2LimitAngle	 Size of limit in degrees, 0 means locked, 180 means free
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void  SetAngularLimits(FName InBoneName,float Swing1LimitAngle, float TwistLimitAngle, float Swing2LimitAngle);
+
+	/** Gets the current Angular state for a named bone constraint 
+	*  @param InBoneName  Name of bone to get constraint ranges for
+	*  @param Swing1Angle current angular state of the constraint
+	*  @param TwistAngle  current angular state of the constraint
+	*  @param Swing2Angle current angular state of the constraint
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Physics")
+	ENGINE_API void GetCurrentJointAngles(FName InBoneName,float& Swing1Angle, float& TwistAngle, float& Swing2Angle) ;
+
+
+	/** iterates through all bodies in our PhysicsAsset and returns the location of the closest bone associated
+	 * with a body that has collision enabled.
+	 * @param TestLocation - location to check against
+	 * @return location of closest colliding rigidbody, or TestLocation if there were no bodies to test
+	 */
+	ENGINE_API FVector GetClosestCollidingRigidBodyLocation(const FVector& TestLocation) const;
+	
+	/** Set physics transforms for all bodies */
+	ENGINE_API void ApplyDeltaToAllPhysicsTransforms(const FVector& DeltaLocation, const FQuat& DeltaRotation);
+
+	/** Destroys and recreates the clothing actors in the current simulation */
+	UFUNCTION(BlueprintCallable, Category = "Clothing")
+	ENGINE_API void RecreateClothingActors();
+
+	/** Given bounds InOutBounds, expand them to also enclose the clothing simulation mesh */
+	ENGINE_API void AddClothingBounds(FBoxSphereBounds& InOutBounds, const FTransform& LocalToWorld) const;
+
+	/** Check linear and angular thresholds for clothing teleport */
+	ENGINE_API virtual void CheckClothTeleport();
+
+	/** Update the clothing simulation state and trigger the simulation task */
+	ENGINE_API void UpdateClothStateAndSimulate(float DeltaTime, FTickFunction& ThisTickFunction);
+	
+	/** 
+	 * Updates cloth collision outside the cloth asset (environment collision, child collision, etc...)
+	 * Should be called when scene changes or world position changes
+	 */
+	ENGINE_API void UpdateClothTransform(ETeleportType TeleportType);
+
+	/** Set the cloth transform update to trigger with no teleport option. */
+	void UpdateClothTransform() { UpdateClothTransform(ETeleportType::None); }
+
+	/**
+	 * Updates cloth collision inside the cloth asset (from a physics asset).
+	 * Should be called when the physics asset changes and the effects are needed straight away.
+	 */
+	ENGINE_API void UpdateClothCollision();
+
+	/** if the vertex index is valid for simulated vertices, returns the position in world space */
+	ENGINE_API bool GetClothSimulatedPosition_GameThread(const FGuid& AssetGuid, int32 VertexIndex, FVector& OutSimulPos) const;
+
+	const TArray<FClothCollisionSource>& GetClothCollisionSources() const { return ClothCollisionSources; }
+
+	/**
+	 * Add a collision source for the cloth on this component.
+	 * Each cloth tick, the collision defined by the physics asset, transformed by the bones in the source
+	 * component, will be applied to cloth.
+	 * @param	InSourceComponent		The component to extract collision transforms from
+	 * @param	InSourcePhysicsAsset	The physics asset that defines the collision primitives (that will be transformed by InSourceComponent's bones)
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Clothing")
+	ENGINE_API void AddClothCollisionSource(USkeletalMeshComponent* InSourceComponent, UPhysicsAsset* InSourcePhysicsAsset);
+
+	/** Remove a cloth collision source defined by a component */
+	UFUNCTION(BlueprintCallable, Category = "Clothing")
+	ENGINE_API void RemoveClothCollisionSources(USkeletalMeshComponent* InSourceComponent);
+
+	/** Remove a cloth collision source defined by a component */
+	UE_DEPRECATED(5.5, "This function has been renamed RemoveClothCollisionSources")
+	void RemoveClothCollisionSource(USkeletalMeshComponent* InSourceComponent)
+	{
+		RemoveClothCollisionSources(InSourceComponent);
+	}
+
+	/** Remove a cloth collision source defined by both a component and a physics asset */
+	UFUNCTION(BlueprintCallable, Category = "Clothing")
+	ENGINE_API void RemoveClothCollisionSource(USkeletalMeshComponent* InSourceComponent, UPhysicsAsset* InSourcePhysicsAsset);
+
+	/** Remove all cloth collision sources */
+	UFUNCTION(BlueprintCallable, Category = "Clothing")
+	ENGINE_API void ResetClothCollisionSources();
