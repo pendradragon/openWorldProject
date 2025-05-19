@@ -1957,3 +1957,52 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	**/ 
 	ENGINE_API virtual FTransform GetComponentTransformFromBodyInstance(FBodyInstance* UseBI) override;
 	//~ End UPrimitiveComponnt Interface
+    
+    public: 
+	//~ Begin USkinnedMeshComponent Interface
+	ENGINE_API virtual bool UpdateLODStatus() override;
+	ENGINE_API virtual void SetPredictedLODLevel(int32 InPredictedLODLevel) override;
+	ENGINE_API virtual void UpdateVisualizeLODString(FString& DebugString) override;
+	ENGINE_API virtual void RefreshBoneTransforms( FActorComponentTickFunction* TickFunction = NULL ) override;
+    protected:
+	ENGINE_API virtual void DispatchParallelTickPose( FActorComponentTickFunction* TickFunction ) override;
+    public:
+	ENGINE_API virtual void TickPose(float DeltaTime, bool bNeedsValidRootMotion) override;
+	ENGINE_API virtual void UpdateFollowerComponent() override;
+	UE_DEPRECATED(5.1, "This method has been deprecated. Please use UpdateFollowerComponent instead.")
+	virtual void UpdateSlaveComponent() override { UpdateFollowerComponent(); };
+	ENGINE_API virtual bool ShouldUpdateTransform(bool bLODHasChanged) const override;
+	ENGINE_API virtual bool ShouldTickPose() const override;
+	ENGINE_API virtual bool AllocateTransformData() override;
+	ENGINE_API virtual void DeallocateTransformData() override;
+	ENGINE_API virtual void HideBone( int32 BoneIndex, EPhysBodyOp PhysBodyOption ) override;
+	ENGINE_API virtual void UnHideBone( int32 BoneIndex ) override;
+	ENGINE_API virtual void SetPhysicsAsset(class UPhysicsAsset* NewPhysicsAsset,bool bForceReInit = false) override;
+	ENGINE_API virtual void SetSkeletalMesh(class USkeletalMesh* NewMesh, bool bReinitPose = true) override;  // SetSkeletalMesh may remain and become a UFUNCTION but lose its virtual after it is removed from the SkinnedMeshComponent API
+
+	/**
+	* Set the new asset to render and update this component (this function is identical to SetSkeletalMesh)
+	* The USkinnedAsst pointer is first cast to USkeletalMesh, therefore this function will only set assets of type USkeletalMesh. 
+	*
+	* @param InSkinnedAsset: The new asset
+	* @param bReinitPost: Whether to re-initalize the animation
+	**/ 
+	ENGINE_API virtual void SetSkinnedAssetAndUpdate(class USkinnedAsset* InSkinnedAsset, bool bReinitPose = true) override;
+	
+	static ENGINE_API FVector3f GetSkinnedVertexPosition(USkeletalMeshComponent* Component, int32 VertexIndex, const FSkeletalMeshLODRenderData& Model, const FSkinWeightVertexBuffer& SkinWeightBuffer);
+	static ENGINE_API FVector3f GetSkinnedVertexPosition(USkeletalMeshComponent* Component, int32 VertexIndex, const FSkeletalMeshLODRenderData& Model, const FSkinWeightVertexBuffer& SkinWeightBuffer, TArray<FMatrix44f>& CachedRefToLocals);
+	static ENGINE_API void ComputeSkinnedPositions(USkeletalMeshComponent* Component, TArray<FVector3f> & OutPositions, TArray<FMatrix44f>& CachedRefToLocals, const FSkeletalMeshLODRenderData& Model, const FSkinWeightVertexBuffer& SkinWeightBuffer);
+	
+	static ENGINE_API void GetSkinnedTangentBasis(USkeletalMeshComponent* Component, int32 VertexIndex, const FSkeletalMeshLODRenderData& Model, const FSkinWeightVertexBuffer& SkinWeightBuffer, TArray<FMatrix44f>& CachedRefToLocals, FVector3f& OutTangentX, FVector3f& OutTangentY, FVector3f& OutTangentZ);
+	static ENGINE_API void ComputeSkinnedTangentBasis(USkeletalMeshComponent* Component, TArray<FVector3f>& OutTangenXYZ, TArray<FMatrix44f>& CachedRefToLocals, const FSkeletalMeshLODRenderData& Model, const FSkinWeightVertexBuffer& SkinWeightBuffer);
+	
+	UE_DEPRECATED(5.1, "This method has been deprecated. Please use SetSkeletalMesh(NewMesh, false) instead.")
+	ENGINE_API void SetSkeletalMeshWithoutResettingAnimation(class USkeletalMesh* NewMesh);
+	
+	ENGINE_API virtual bool IsPlayingRootMotion() const override;
+	ENGINE_API virtual bool IsPlayingNetworkedRootMotionMontage() const override;
+	ENGINE_API virtual bool IsPlayingRootMotionFromEverything() const override;
+	ENGINE_API virtual void FinalizeBoneTransform() override;
+	ENGINE_API virtual void SetRefPoseOverride(const TArray<FTransform>& NewRefPoseTransforms) override;
+	ENGINE_API virtual void ClearRefPoseOverride() override;
+	//~ End USkinnedMeshComponent Interface
