@@ -1949,3 +1949,11 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 		ENGINE_API virtual bool ComponentIsTouchingSelectionBox(const FBox& InSelBBox, const bool bConsiderOnlyBSP, const bool bMustEncompassEntireComponent) const override;
 		ENGINE_API virtual bool ComponentIsTouchingSelectionFrustum(const FConvexVolume& InFrustum, const bool bConsiderOnlyBSP, const bool bMustEncompassEntireComponent) const override;
 	#endif
+    protected:
+	/**
+	* If PhysicsTransformUpdateMode is st to SimulationUpdatesComponentTransform, this returns the 
+	* world-space transform of th body passed in (assumed to be the root body), after applying the
+	* TransformToRoot offset. Otherwise, it returns the component transform
+	**/ 
+	ENGINE_API virtual FTransform GetComponentTransformFromBodyInstance(FBodyInstance* UseBI) override;
+	//~ End UPrimitiveComponnt Interface
