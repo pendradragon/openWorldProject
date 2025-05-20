@@ -2433,3 +2433,45 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	virtual void OnSyncComponentToRBPhysics() { }
 
 	FSkeletalMeshComponentEndPhysicsTickFunction EndPhysicsTickFunction;
+
+    private:
+
+	virtual void OnClearAnimScriptInstance() {};
+
+	friend struct FSkeletalMeshComponentEndPhysicsTickFunction;
+
+	//Update systems after physics sim is done. 
+	ENGINE_API void EndPhysicsTickComponent(FSkeletalMeshComponentEndPhysicsTickFunction& ThisTickFunction);
+
+	//Evaluate Anim System
+	ENGINE_API void EvaluateAnimation(const USkeletalMesh* InSkeletalMesh, UAnimInstance* InAnimInstance, bool bInForceRefPose, FVector& OutRootBoneTranslation, FBlendedHeapCurve& OutCurve, FCompactPose& OutPose, UE::Anim::FHeapAttributeContainer& OutAttributes) const;
+
+	//Queues up tasks for parallel update/evaluation, as well as the chained game thread completion task
+	ENGINE_API void DispatchParallelEvaluationTasks(FActorComponentTickFunction* TickFunction);
+
+	//Performs parallel eval/update work, but on the game thread
+	ENGINE_API void DoParallelEvaluationTasks_OnGameThread();
+
+	//Swaps buffers into the evaluation context before and after task dispatch
+	ENGINE_API void SwapEvaluationContextBuffers();
+
+	//Duplicates cached transforms/curves and performs intrpolation 
+	ENGINE_API void ParallelDuplicateAndInterpolate(FAnimationEvaluationContext& InAnimEvaluationContext);
+
+	ENGINE_API bool DoAnyPhysicsBodiesHaveWeight() const;
+
+	ENGINE_API virtual void RefreshMorphTargets() override;
+
+	ENGINE_API void GetWindForCloth_GameThread(FVector& WindVector, float& WindAdaption) const;
+
+	ENGINE_API void InstantiatePhysicsAsset_Internal(const UPhysicsAsset& PhysAsset, const FVector& Scale3D, TArray<FBodyInstance*>& OutBodies, TArray<FConstraintInstance*>& OutConstraints, TFunctionRef<FTransform(int32)> BoneTransformGetter, FPhysScene* PhysScene = nullptr, USkeletalMeshComponent* OwningComponent = nullptr, int32 UseRootBodyIndex = INDEX_NONE, const FPhysicsAggregateHandle& UseAggregate = FPhysicsAggregateHandle()) const;
+	ENGINE_API void InstantiatePhysicsAssetBodies_Internal(const UPhysicsAsset& PhysAsset, TArray<FBodyInstance*>& OutBodies, TFunctionRef<FTransform(int32)> BoneTransformGetter, TMap<FName, FBodyInstance*>* OutNameToBodyMap = nullptr, FPhysScene* PhysScene = nullptr, USkeletalMeshComponent* OwningComponent = nullptr, int32 UseRootBodyIndex = INDEX_NONE, const FPhysicsAggregateHandle& UseAggregate = FPhysicsAggregateHandle()) const;
+
+	//Reference to our current parallel aniamtion evaluation task (if there is one)
+	FGraphEventRef				ParallelAnimationEvaluationTask;
+
+	//Reference to our current blend physics task (if there is one)
+	FGraphEventRef				ParallelBlendPhysicsCompletionTask;
+
+	//Data for parallel evaluation of animation 
+	FAnimationEvaluationContext AnimEvaluationContext;
