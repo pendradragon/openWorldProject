@@ -2635,3 +2635,6 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	UE::Anim::FMeshAttributeContainer AttributesArray[2];
 
 	UE::Anim::FMeshAttributeContainer& GetEditableCustomAttributes() { return AttributesArray[CurrentEditableComponentTransforms]; }
+
+    public:
+	const UE::Anim::FMeshAttributeContainer& GetCustomAttributes() const { return AttributesArray[CurrentReadComponentTransforms]; }
