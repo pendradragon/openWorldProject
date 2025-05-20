@@ -2641,3 +2641,21 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
     public: 
 	/** Skeletal mesh component should not be able to have its mobility set to static */
 	virtual const bool CanHaveStaticMobility() const override { return false; }
+
+    public:
+	/** Register/Unregister for physics state creation callback */
+	ENGINE_API FDelegateHandle RegisterOnPhysicsCreatedDelegate(const FOnSkelMeshPhysicsCreated& Delegate);
+	ENGINE_API void UnregisterOnPhysicsCreatedDelegate(const FDelegateHandle& DelegateHandle);
+
+	/** Register/Unregister for teleport callback */
+	ENGINE_API FDelegateHandle RegisterOnTeleportDelegate(const FOnSkelMeshTeleported& Delegate);
+	ENGINE_API void UnregisterOnTeleportDelegate(const FDelegateHandle& DelegateHandle);
+
+	/** Register/Unregister for OnBoneTransformsFinalized callback */
+	ENGINE_API virtual FDelegateHandle RegisterOnBoneTransformsFinalizedDelegate(const FOnBoneTransformsFinalizedMultiCast::FDelegate& Delegate) override;
+	ENGINE_API virtual void UnregisterOnBoneTransformsFinalizedDelegate(const FDelegateHandle& DelegateHandle) override;
+
+	/** Register/Unregister for OnLODRequiredBonesUpdate callback */
+	ENGINE_API FDelegateHandle RegisterOnLODRequiredBonesUpdate(const FOnLODRequiredBonesUpdate& Delegate);
+	ENGINE_API void UnregisterOnLODRequiredBonesUpdate(const FDelegateHandle& DelegateHandle);
+	
