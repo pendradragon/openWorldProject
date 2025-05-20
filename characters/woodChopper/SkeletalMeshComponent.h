@@ -2613,3 +2613,17 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	/** Consume and return pending root motion from our internal anim instances (main, sub and post) */
 	ENGINE_API FRootMotionMovementParams ConsumeRootMotion_Internal(float InAlpha);
+
+    private:
+	#if WITH_EDIOR
+		/** This is required for recording animations, so save for editor only */
+		/** Temporary array of curve arrays that are active on this component - keeps same buffer index as SpaceBases - Please check SkinnedMeshComponent*/
+		FBlendedHeapCurve	CurvesArray[2];
+	public: 
+		/** Access Curve Array for reading */
+		const FBlendedHeapCurve& GetAnimationCurves() const { return CurvesArray[CurrentReadComponentTransforms]; }
+	
+		/** Get Access to the current editable Curve Array - uses same buffer as space bases*/
+		FBlendedHeapCurve& GetEditableAnimationCurves() { return CurvesArray[CurrentEditableComponentTransforms]; }
+		const FBlendedHeapCurve& GetEditableAnimationCurves() const { return CurvesArray[CurrentEditableComponentTransforms]; }
+	#endif 
