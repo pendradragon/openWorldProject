@@ -2615,6 +2615,7 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	ENGINE_API FRootMotionMovementParams ConsumeRootMotion_Internal(float InAlpha);
 
     private:
+
 	#if WITH_EDIOR
 		/** This is required for recording animations, so save for editor only */
 		/** Temporary array of curve arrays that are active on this component - keeps same buffer index as SpaceBases - Please check SkinnedMeshComponent*/
@@ -2627,3 +2628,10 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 		FBlendedHeapCurve& GetEditableAnimationCurves() { return CurvesArray[CurrentEditableComponentTransforms]; }
 		const FBlendedHeapCurve& GetEditableAnimationCurves() const { return CurvesArray[CurrentEditableComponentTransforms]; }
 	#endif 
+
+
+    private: 
+	/** Temporary array of attributes that are active on this component - keeps same buffer index as SpaceBases - Please check SkinnedMeshComponent*/
+	UE::Anim::FMeshAttributeContainer AttributesArray[2];
+
+	UE::Anim::FMeshAttributeContainer& GetEditableCustomAttributes() { return AttributesArray[CurrentEditableComponentTransforms]; }
