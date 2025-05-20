@@ -2393,3 +2393,22 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	/** Remove all cloth collision sources */
 	UFUNCTION(BlueprintCallable, Category = "Clothing")
 	ENGINE_API void ResetClothCollisionSources();
+
+    protected:
+
+	#if WITH_CLOTH_COLLISION_DETECTION
+		//copy cloth collision sources to this, where parent means components above it in the hierarchy
+		ENGINE_API void CopyClothCollisionSources();
+	
+		ENGINE_API void ProcessClothCollisionWithEnvironment();
+
+		//copy parent's cloth collisiotns to attached children, where parent means this component
+		ENGINE_API void CopyClothCollisionsToChildren();
+
+		//copy children's cloths collisions to parent, where parent means this component
+		ENGINE_API void CopyChildrenClothCollisionsToParent();
+
+		//find if this component has collisions for clothing and return the results calculated by bone transforms
+		ENGINE_API void FindClothCollisions(FClothCollisionData& OutCollisions);
+
+	#endif
