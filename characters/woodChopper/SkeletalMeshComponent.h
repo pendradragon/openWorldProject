@@ -2412,3 +2412,10 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 		ENGINE_API void FindClothCollisions(FClothCollisionData& OutCollisions);
 
 	#endif
+
+    public: 
+	ENGINE_API bool IsAnimBlueprintInstanced() const;
+	ENGINE_API void ClearAnimScriptInstance();
+
+	/** Clear cached animation data generated for URO during evaluation */
+	ENGINE_API void ClearCachedAnimProperties();
