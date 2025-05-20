@@ -2509,3 +2509,90 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	// Returns whether we need to run the Cloth Tick or not
 	ENGINE_API virtual bool ShouldRunClothTick() const;
+
+    private: 
+	//Override USkinnedMeshComponent
+	ENGINE_API virtual void AddFollowerPoseComponent(USkinnedMeshComponent* SkinnedMeshComponent) override;
+	ENGINE_API virtual void RemoveFollowerPoseComponent(USkinnedMeshComponent* SkinnedMeshComponent) override;
+
+	//Returns whether we need to run the Pre Cloth Tick or not
+	ENGINE_API bool ShouldRunEndPhysicsTick() const;
+
+	//Handles registering/unregistering the pre cloth tick as it is needed
+	ENGINE_API void UpdateEndPhysicsTickRegisteredState();
+
+	//Handles registering/unregistering the cloth tick as it is needed
+	ENGINE_API void UpdateClothTickRegisteredState();
+
+	//Handles registering/unregistering the 'during animation' tick as it is needed
+	ENGINE_API void UpdateDuringAnimationTickRegisteredState();
+
+	//Finalizes pose to OutBoneSpaceTransforms
+	ENGINE_API void FinalizePoseEvaluationResult(const USkeletalMesh* InMesh, TArray<FTransform>& OutBoneSpaceTransforms, FVector& OutRootBoneTranslation, FCompactPose& InFinalPose) const;
+
+	//Finalizes attributes (remapping from compact mesh bone-indicies)
+	ENGINE_API void FinalizeAttributeEvaluationResults(const FBoneContainer& BoneContainer, const UE::Anim::FHeapAttributeContainer& FinalContainer, UE::Anim::FMeshAttributeContainer& OutContainer) const;
+
+	friend class FParallelBlendPhysicsTask;
+	
+	ENGINE_API void BlendInPhysicsInternal(FTickFunction& ThisTickFunction);
+
+	// Blends the simulation output with the component and bone space transforms coming from
+	// animation (just calls PerformBlendPhysicsBones)
+	void ParallelBlendPhysics() { PerformBlendPhysicsBones(RequiredBones, AnimEvaluationContext.ComponentSpaceTransforms, AnimEvaluationContext.BoneSpaceTransforms); }
+
+	// Blends the simulation output with the component and bone space transforms coming from animation
+	ENGINE_API void PerformBlendPhysicsBones(const TArray<FBoneIndexType>& InRequiredBones, TArray<FTransform>& InOutComponentSpaceTransforms, TArray<FTransform>& InOutBoneSpaceTransforms);
+
+	friend class FParallelClothTask;
+	// This is the parallel function that updates the cloth data and runs the simulation. This is safe to call from worker threads.
+	//static void ParallelEvaluateCloth(float DeltaTime, const FClothingActor& ClothingActor, const FClothSimulationContext& ClothSimulationContext);
+
+	friend class FParallelBlendPhysicsCompletionTask;
+	ENGINE_API void CompleteParallelBlendPhysics();
+	ENGINE_API void FinalizeAnimationUpdate();
+
+	/** See UpdateClothTransform for documentation. */
+	ENGINE_API void UpdateClothTransformImp();
+
+	friend class FClothingSimulationContextCommon;
+
+	friend class FTickClothingTask;
+
+	#if WITH_EDITORONLY_DATA
+		// these are deprecated variables from removing SingleAnimSkeletalComponent
+		// remove if this version goes away : VER_UE4_REMOVE_SINGLENODEINSTANCE
+		// deprecated variable to be re-save
+		UPROPERTY()
+		TObjectPtr<class UAnimSequence> SequenceToPlay_DEPRECATED;
+	
+		// The default sequence to play on this skeletal mesh
+		UPROPERTY()
+		TObjectPtr<class UAnimationAsset> AnimToPlay_DEPRECATED;
+	
+		// Default setting for looping for SequenceToPlay. This is not current state of looping.
+		UPROPERTY()
+		uint32 bDefaultLooping_DEPRECATED:1;
+	
+		// Default setting for playing for SequenceToPlay. This is not current state of playing.
+		UPROPERTY()
+		uint32 bDefaultPlaying_DEPRECATED:1;
+	
+		// Default setting for position of SequenceToPlay to play. 
+		UPROPERTY()
+		float DefaultPosition_DEPRECATED;
+	
+		// Default setting for playrate of SequenceToPlay to play. 
+		UPROPERTY()
+		float DefaultPlayRate_DEPRECATED;
+	#endif
+
+	/*
+	 * Update MorphTargetCurves from mesh - these are not animation curves, but SetMorphTarget and similar functions that can set to this mesh component
+	 */
+	ENGINE_API void UpdateMorphTargetOverrideCurves();
+
+	/*
+	 * Reset MorphTarget Curves - Reset all morphtarget curves
+	 */
+	ENGINE_API void ResetMorphTargetCurves();
