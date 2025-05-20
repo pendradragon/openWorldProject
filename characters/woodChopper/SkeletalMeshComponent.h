@@ -2603,7 +2603,13 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	/** Consume and return pending root motion from our internal anim instances (main, sub and post) */
 	ENGINE_API FRootMotionMovementParams ConsumeRootMotion();
+	
 	#if WITH_EDITOR
 		/** Called after modifying Component Space Transforms externally */
 		ENGINE_API void ApplyEditedComponentSpaceTransforms();
 	#endif
+
+    protected:
+
+	/** Consume and return pending root motion from our internal anim instances (main, sub and post) */
+	ENGINE_API FRootMotionMovementParams ConsumeRootMotion_Internal(float InAlpha);
