@@ -2475,3 +2475,26 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	//Data for parallel evaluation of animation 
 	FAnimationEvaluationContext AnimEvaluationContext;
+
+    public: 
+	// Parallel evaluation wrappers
+	ENGINE_API void ParallelAnimationEvaluation();
+	ENGINE_API virtual void CompleteParallelAnimationEvaluation(bool bDoPostAnimEvaluation);
+
+
+	// Returns whether we are currently trying to run a parallel animation evaluation task
+	bool IsRunningParallelEvaluation() const { return IsValidRef(ParallelAnimationEvaluationTask); }
+
+	// Management function for if we want to do an evaluation but may already be running one
+	// bBlockOnTask - if true and we are currently performing parallel eval we wait for it to finish
+	// bPerformPostAnimEvaluation - if true and we are currently performing parallel eval we call PostAnimEvaluation too
+	// return true if parallel task was running.
+	ENGINE_API bool HandleExistingParallelEvaluationTask(bool bBlockOnTask, bool bPerformPostAnimEvaluation);
+
+	friend class FSkeletalMeshComponentDetails;
+
+	/** Apply animation curves to this component */
+	ENGINE_API void ApplyAnimationCurvesToComponent(const TMap<FName, float>* InMaterialParameterCurves, const TMap<FName, float>* InAnimationMorphCurves);
+	
+	// Returns whether we're able to run a simulation (ignoring the suspend flag)
+	ENGINE_API bool CanSimulateClothing() const;
