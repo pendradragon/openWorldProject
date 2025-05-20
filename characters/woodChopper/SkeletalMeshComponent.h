@@ -2419,3 +2419,17 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 	/** Clear cached animation data generated for URO during evaluation */
 	ENGINE_API void ClearCachedAnimProperties();
+
+    protected:
+	ENGINE_API bool NeedToSpawnAnimScriptInstance() const;
+	ENGINE_API bool NeedToSpawnPostPhysicsInstance(bool bForceReinit) const;
+
+	ENGINE_API virtual bool ShouldBlendPhysicsBones() const;
+
+	/** Extract collisions for cloth from this component (given a component we want to apply the data to) */
+	static ENGINE_API void ExtractCollisionsForCloth(USkeletalMeshComponent* SourceComponent,  UPhysicsAsset* PhysicsAsset, USkeletalMeshComponent* DestClothComponent, FClothCollisionData& OutCollisions, FClothCollisionSource& ClothCollisionSource);
+
+	/** Notify called just before syncing physics update, called only if bNotifySyncComponentToRBPhysics flag is set */
+	virtual void OnSyncComponentToRBPhysics() { }
+
+	FSkeletalMeshComponentEndPhysicsTickFunction EndPhysicsTickFunction;
