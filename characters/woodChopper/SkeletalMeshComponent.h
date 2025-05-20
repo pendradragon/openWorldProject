@@ -2596,3 +2596,14 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	 * Reset MorphTarget Curves - Reset all morphtarget curves
 	 */
 	ENGINE_API void ResetMorphTargetCurves();
+
+    public:
+	/** Take extracted RootMotion and convert it from local space to world space. */
+	ENGINE_API FTransform ConvertLocalRootMotionToWorld(const FTransform& InTransform);
+
+	/** Consume and return pending root motion from our internal anim instances (main, sub and post) */
+	ENGINE_API FRootMotionMovementParams ConsumeRootMotion();
+	#if WITH_EDITOR
+		/** Called after modifying Component Space Transforms externally */
+		ENGINE_API void ApplyEditedComponentSpaceTransforms();
+	#endif
