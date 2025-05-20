@@ -2498,3 +2498,14 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	
 	// Returns whether we're able to run a simulation (ignoring the suspend flag)
 	ENGINE_API bool CanSimulateClothing() const;
+
+    protected:
+
+	// Prep anim instances for evaluation
+	ENGINE_API void DoInstancePreEvaluation();
+
+	// Handle post evaluation on all anim instances
+	ENGINE_API void DoInstancePostEvaluation();
+
+	// Returns whether we need to run the Cloth Tick or not
+	ENGINE_API virtual bool ShouldRunClothTick() const;
