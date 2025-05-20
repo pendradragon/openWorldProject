@@ -2638,3 +2638,6 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
     public:
 	const UE::Anim::FMeshAttributeContainer& GetCustomAttributes() const { return AttributesArray[CurrentReadComponentTransforms]; }
+    public: 
+	/** Skeletal mesh component should not be able to have its mobility set to static */
+	virtual const bool CanHaveStaticMobility() const override { return false; }
