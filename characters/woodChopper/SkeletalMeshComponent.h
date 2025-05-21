@@ -2707,3 +2707,12 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	 * Cooking does not guarantee skeleton containing all names
 	 */
 	ENGINE_API bool AreRequiredCurvesUpToDate() const;
+
+
+    private:
+	// Can't rely on time value, because those may be affected by dilation and whether or not
+	// the game is paused.
+	// Also can't just rely on a flag as other components (like CharacterMovementComponent) may tick
+	// the pose and we can't guarantee tick order.
+	UPROPERTY(Transient)
+	uint32 LastPoseTickFrame; 
