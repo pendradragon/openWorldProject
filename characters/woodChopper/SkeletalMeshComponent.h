@@ -2716,3 +2716,16 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	// the pose and we can't guarantee tick order.
 	UPROPERTY(Transient)
 	uint32 LastPoseTickFrame; 
+
+    public: 
+	ENGINE_API void ConditionallyDispatchQueuedAnimEvents();
+
+	// Are we currently within PostAnimEvaluation
+	bool IsPostEvaluatingAnimation() const { return bPostEvaluatingAnimation; }
+
+	//~ Begin IPhysicsComponent Interface.
+	ENGINE_API virtual Chaos::FPhysicsObject* GetPhysicsObjectById(Chaos::FPhysicsObjectId Id) const override;
+	ENGINE_API virtual Chaos::FPhysicsObject* GetPhysicsObjectByName(const FName& Name) const override;
+	ENGINE_API virtual TArray<Chaos::FPhysicsObject*> GetAllPhysicsObjects() const override;
+	//~ End IPhysicsComponent Interface.
+    };
