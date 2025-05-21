@@ -2729,3 +2729,14 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	ENGINE_API virtual TArray<Chaos::FPhysicsObject*> GetAllPhysicsObjects() const override;
 	//~ End IPhysicsComponent Interface.
     };
+
+#if WITH_EDITOR
+    struct FPoseWatchDynamicData
+    {
+	public: 
+
+		FPoseWatchDynamicData(USkeletalMeshComponent* InComponent);
+	
+		TArray<FAnimNodePoseWatch> PoseWatches;
+    };
+#endif
