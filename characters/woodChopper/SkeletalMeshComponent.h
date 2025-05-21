@@ -2683,3 +2683,27 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 
 
 	#endif
+    private:
+
+	/** Multicaster fired when this component creates physics state (in case external objects rely on physics state)*/
+	FOnSkelMeshPhysicsCreatedMultiCast OnSkelMeshPhysicsCreated;
+
+	/** Multicaster fired when this component teleports */
+	FOnSkelMeshTeleportedMultiCast OnSkelMeshPhysicsTeleported;
+
+	/** Multicaster fired when this component bone transforms are finalized */
+	FOnBoneTransformsFinalizedMultiCast OnBoneTransformsFinalizedMC;
+
+	/** Static Multicaster fired when this component finalizes the regeneration of the required bones list for the current LOD*/
+	static ENGINE_API FOnLODRequiredBonesUpdateMulticast OnLODRequiredBonesUpdate;
+
+	/** Mark current anim UID version to up-to-date. Called when it's recalculated */
+	ENGINE_API void MarkRequiredCurveUpToDate();
+	
+	/* This will check if the required curves are up-to-date by checking version number with skeleton. 
+	 * Skeleton's curve list changes whenever newer is added or deleted. 
+	 * This still has to happen in editor as well as in game as 
+	 * There is no guarantee of Skeleton having all curves as we've seen over and over again. 
+	 * Cooking does not guarantee skeleton containing all names
+	 */
+	ENGINE_API bool AreRequiredCurvesUpToDate() const;
