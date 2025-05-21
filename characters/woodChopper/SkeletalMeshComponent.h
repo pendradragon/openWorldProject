@@ -2740,3 +2740,30 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 		TArray<FAnimNodePoseWatch> PoseWatches;
     };
 #endif
+
+struct FLinkedInstancesAdapter
+{
+	static void AddLinkedInstance(USkeletalMeshComponent* InComponent, UAnimInstance* InAnimInstance)
+	{
+		if (InComponent && InAnimInstance)
+		{
+			InComponent->LinkedInstances.AddUnique(InAnimInstance);
+		}
+	}
+
+	static void RemoveLinkedInstance(USkeletalMeshComponent* InComponent, UAnimInstance* InAnimInstance)
+	{
+		if (InComponent && InAnimInstance)
+		{
+			InComponent->LinkedInstances.Remove(InAnimInstance);
+		}
+	}
+
+	static void ResetLinkedInstance(USkeletalMeshComponent* InComponent)
+	{
+		if (InComponent)
+		{
+			InComponent->LinkedInstances.Reset();
+		}
+	}
+};
