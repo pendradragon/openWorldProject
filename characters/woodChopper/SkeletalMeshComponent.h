@@ -2659,3 +2659,27 @@ class USkeletalMeshComponent : public USkinnedMeshComponent, public IInterface_C
 	ENGINE_API FDelegateHandle RegisterOnLODRequiredBonesUpdate(const FOnLODRequiredBonesUpdate& Delegate);
 	ENGINE_API void UnregisterOnLODRequiredBonesUpdate(const FDelegateHandle& DelegateHandle);
 	
+    private:
+
+	#if WITH_EDITORONLY_DATA
+
+		/** Default Animating Rig to Use if bOverrideDefaultAnimatingRig is true */
+		UPROPERTY(EditAnywhere, Category = AnimationRig, BlueprintGetter = GetDefaultAnimatingRigOverride, BlueprintSetter = SetDefaultAnimatingRigOverride, meta = (AllowedClasses = "/Script/ControlRigDeveloper.ControlRigBlueprint"), meta = (editcondition = "bOverrideDefaultAnimatingRig"))
+		TSoftObjectPtr<UObject> DefaultAnimatingRigOverride;
+
+	#endif
+
+	#if WITH_EDITOR
+		public:
+
+			UFUNCTION(BlueprintSetter)
+			ENGINE_API void SetDefaultAnimatingRigOverride(TSoftObjectPtr<UObject> InAnimatingRig);
+		
+			UFUNCTION(BlueprintGetter)
+			ENGINE_API TSoftObjectPtr<UObject> GetDefaultAnimatingRigOverride() const;
+		
+			UFUNCTION(BlueprintCallable, Category = "Components|SkeletalMesh")
+			ENGINE_API TSoftObjectPtr<UObject> GetDefaultAnimatingRig() const;
+
+
+	#endif
